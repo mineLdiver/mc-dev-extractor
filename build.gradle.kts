@@ -47,6 +47,7 @@ val serverJar = project.buildDir.resolve("tmp/mcdevMappingsExtractor/b1.7.3.jar"
 task("downloadServer") {
     group = "bukric"
     description = "Downloads the server"
+
     doLast {
         if (serverJar.exists()) return@doLast
         serverJar.parentFile.mkdirs()
@@ -58,8 +59,10 @@ task("downloadServer") {
 // mc-dev tasks
 
 val mcdev = projectDir.resolve("mc-dev")
+val mcdevSubmodule = projectDir.resolve(".git/modules/mc-dev")
 val mcdevPatches = projectDir.resolve("mc-dev-patches")
 val mcdevPatched = projectDir.resolve("mc-dev-patched")
+val mcdevClasses = project.buildDir.resolve("classes/mc-dev")
 
 tasks.register<Delete>("cleanMcdev") {
     group = "mc-dev"
@@ -76,7 +79,7 @@ task("setupMcdev") {
 
     doLast {
         with(CloneOp()) {
-            uri = projectDir.resolve(".git").resolve("modules").resolve("mc-dev").toURI().toString()
+            uri = mcdevSubmodule.toURI().toString()
             dir = mcdevPatched
             call()
         }
@@ -138,12 +141,26 @@ tasks.register<JavaCompile>("compileMcdev") {
     description = "Compiles mc-dev"
 
     source = fileTree(mcdevPatched) { include("**/*.java") }
-    classpath = files(project.buildDir.resolve("classes/mcdev"))
-    destinationDirectory.set(project.buildDir.resolve("classes/mcdev"))
+    classpath = files(mcdevClasses)
+    destinationDirectory.set(mcdevClasses)
 
     // JavaCompile doesn't support Java 5 anymore
 //    val javaVersion = JavaVersion.forClassVersion(49).toString()
     val javaVersion = JavaVersion.VERSION_1_7.toString()
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
+}
+
+tasks.register<Jar>("jarMcdev") {
+    group = "mc-dev"
+    description = "Bundles mc-dev into an executable jar"
+
+    dependsOn("compileMcdev")
+
+    from(fileTree(mcdevPatched) { exclude("**/*.java") }, mcdevClasses)
+    archiveFileName.set("mc-dev.jar")
+
+    manifest.from(mcdevPatched.resolve("META-INF/MANIFEST.MF"))
+
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
