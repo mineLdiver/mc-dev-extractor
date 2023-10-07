@@ -1,0 +1,3 @@
+[submodule "mc-dev"]
+	path = mc-dev
+	url = https://github.com/Bukkit/mc-dev

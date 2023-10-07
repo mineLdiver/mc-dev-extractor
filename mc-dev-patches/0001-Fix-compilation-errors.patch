@@ -1,0 +1,2288 @@
+From a25e52dbaaf64b2c8d3ebb288d647069d48f6d84 Mon Sep 17 00:00:00 2001
+From: mineLdiver <aabesedin@mail.ru>
+Date: Sun, 8 Oct 2023 01:12:21 +0500
+Subject: [PATCH] Fix compilation errors
+
+
+diff --git a/net/minecraft/server/Achievement.java b/net/minecraft/server/Achievement.java
+index f60e806..f196bf7 100644
+--- a/net/minecraft/server/Achievement.java
++++ b/net/minecraft/server/Achievement.java
+@@ -24,11 +24,11 @@ public class Achievement extends Statistic {
+         this.a = j;
+         this.b = k;
+         if (j < AchievementList.a) {
+-            a = j;
++            AchievementList.a = j;
+         }
+ 
+         if (k < AchievementList.b) {
+-            b = k;
++            AchievementList.b = k;
+         }
+ 
+         if (j > AchievementList.c) {
+diff --git a/net/minecraft/server/ChunkCoordinates.java b/net/minecraft/server/ChunkCoordinates.java
+index 46e68c1..0e32980 100644
+--- a/net/minecraft/server/ChunkCoordinates.java
++++ b/net/minecraft/server/ChunkCoordinates.java
+@@ -1,6 +1,6 @@
+ package net.minecraft.server;
+ 
+-public class ChunkCoordinates implements Comparable {
++public class ChunkCoordinates implements Comparable<ChunkCoordinates> {
+ 
+     public int x;
+     public int y;
+diff --git a/net/minecraft/server/ChunkFile.java b/net/minecraft/server/ChunkFile.java
+index 5c7c40f..d442e3f 100644
+--- a/net/minecraft/server/ChunkFile.java
++++ b/net/minecraft/server/ChunkFile.java
+@@ -3,7 +3,7 @@ package net.minecraft.server;
+ import java.io.File;
+ import java.util.regex.Matcher;
+ 
+-class ChunkFile implements Comparable {
++class ChunkFile implements Comparable<ChunkFile> {
+ 
+     private final File a;
+     private final int b;
+diff --git a/net/minecraft/server/ChunkRegionLoader.java b/net/minecraft/server/ChunkRegionLoader.java
+index c4401e9..adda172 100644
+--- a/net/minecraft/server/ChunkRegionLoader.java
++++ b/net/minecraft/server/ChunkRegionLoader.java
+@@ -5,6 +5,7 @@ import java.io.DataInputStream;
+ import java.io.DataOutput;
+ import java.io.DataOutputStream;
+ import java.io.File;
++import java.io.IOException;
+ 
+ public class ChunkRegionLoader implements IChunkLoader {
+ 
+@@ -14,7 +15,7 @@ public class ChunkRegionLoader implements IChunkLoader {
+         this.a = file1;
+     }
+ 
+-    public Chunk a(World world, int i, int j) {
++    public Chunk a(World world, int i, int j) throws IOException {
+         DataInputStream datainputstream = RegionFileCache.c(this.a, i, j);
+ 
+         if (datainputstream != null) {
+diff --git a/net/minecraft/server/CompressedStreamTools.java b/net/minecraft/server/CompressedStreamTools.java
+index 46397ef..94173b5 100644
+--- a/net/minecraft/server/CompressedStreamTools.java
++++ b/net/minecraft/server/CompressedStreamTools.java
+@@ -14,7 +14,7 @@ public class CompressedStreamTools {
+ 
+     public CompressedStreamTools() {}
+ 
+-    public static NBTTagCompound a(InputStream inputstream) {
++    public static NBTTagCompound a(InputStream inputstream) throws IOException {
+         DataInputStream datainputstream = new DataInputStream(new GZIPInputStream(inputstream));
+ 
+         NBTTagCompound nbttagcompound;
+@@ -28,7 +28,7 @@ public class CompressedStreamTools {
+         return nbttagcompound;
+     }
+ 
+-    public static void a(NBTTagCompound nbttagcompound, OutputStream outputstream) {
++    public static void a(NBTTagCompound nbttagcompound, OutputStream outputstream) throws IOException {
+         DataOutputStream dataoutputstream = new DataOutputStream(new GZIPOutputStream(outputstream));
+ 
+         try {
+@@ -38,7 +38,7 @@ public class CompressedStreamTools {
+         }
+     }
+ 
+-    public static NBTTagCompound a(DataInput datainput) {
++    public static NBTTagCompound a(DataInput datainput) throws IOException {
+         NBTBase nbtbase = NBTBase.b(datainput);
+ 
+         if (nbtbase instanceof NBTTagCompound) {
+@@ -48,7 +48,7 @@ public class CompressedStreamTools {
+         }
+     }
+ 
+-    public static void a(NBTTagCompound nbttagcompound, DataOutput dataoutput) {
++    public static void a(NBTTagCompound nbttagcompound, DataOutput dataoutput) throws IOException {
+         NBTBase.a(nbttagcompound, dataoutput);
+     }
+ }
+diff --git a/net/minecraft/server/DataWatcher.java b/net/minecraft/server/DataWatcher.java
+index 0b10dc6..ff57180 100644
+--- a/net/minecraft/server/DataWatcher.java
++++ b/net/minecraft/server/DataWatcher.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ import java.util.ArrayList;
+ import java.util.HashMap;
+ import java.util.Iterator;
+@@ -58,7 +59,7 @@ public class DataWatcher {
+         return this.c;
+     }
+ 
+-    public static void a(List list, DataOutputStream dataoutputstream) {
++    public static void a(List list, DataOutputStream dataoutputstream) throws IOException {
+         if (list != null) {
+             Iterator iterator = list.iterator();
+ 
+@@ -96,7 +97,7 @@ public class DataWatcher {
+         return arraylist;
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         Iterator iterator = this.b.values().iterator();
+ 
+         while (iterator.hasNext()) {
+@@ -108,7 +109,7 @@ public class DataWatcher {
+         dataoutputstream.writeByte(127);
+     }
+ 
+-    private static void a(DataOutputStream dataoutputstream, WatchableObject watchableobject) {
++    private static void a(DataOutputStream dataoutputstream, WatchableObject watchableobject) throws IOException {
+         int i = (watchableobject.c() << 5 | watchableobject.a() & 31) & 255;
+ 
+         dataoutputstream.writeByte(i);
+@@ -150,7 +151,7 @@ public class DataWatcher {
+         }
+     }
+ 
+-    public static List a(DataInputStream datainputstream) {
++    public static List a(DataInputStream datainputstream) throws IOException {
+         ArrayList arraylist = null;
+ 
+         for (byte b0 = datainputstream.readByte(); b0 != 127; b0 = datainputstream.readByte()) {
+diff --git a/net/minecraft/server/IChunkLoader.java b/net/minecraft/server/IChunkLoader.java
+index 4dc523d..3ab63ba 100644
+--- a/net/minecraft/server/IChunkLoader.java
++++ b/net/minecraft/server/IChunkLoader.java
+@@ -1,10 +1,12 @@
+ package net.minecraft.server;
+ 
++import java.io.IOException;
++
+ public interface IChunkLoader {
+ 
+-    Chunk a(World world, int i, int j);
++    Chunk a(World world, int i, int j) throws IOException;
+ 
+-    void a(World world, Chunk chunk);
++    void a(World world, Chunk chunk) throws IOException;
+ 
+     void b(World world, Chunk chunk);
+ 
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+index 2052925..b58ddbb 100644
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -4,6 +4,7 @@ import java.awt.GraphicsEnvironment;
+ import java.io.File;
+ import java.io.IOException;
+ import java.net.InetAddress;
++import java.net.UnknownHostException;
+ import java.util.ArrayList;
+ import java.util.Collections;
+ import java.util.HashMap;
+@@ -39,7 +40,7 @@ public class MinecraftServer implements Runnable, ICommandListener {
+         new ThreadSleepForever(this);
+     }
+ 
+-    private boolean init() {
++    private boolean init() throws UnknownHostException {
+         this.consoleCommandHandler = new ConsoleCommandHandler(this);
+         ThreadCommandReader threadcommandreader = new ThreadCommandReader(this);
+ 
+diff --git a/net/minecraft/server/NBTBase.java b/net/minecraft/server/NBTBase.java
+index a682c58..ff79be8 100644
+--- a/net/minecraft/server/NBTBase.java
++++ b/net/minecraft/server/NBTBase.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInput;
+ import java.io.DataOutput;
++import java.io.IOException;
+ 
+ public abstract class NBTBase {
+ 
+@@ -9,9 +10,9 @@ public abstract class NBTBase {
+ 
+     public NBTBase() {}
+ 
+-    abstract void a(DataOutput dataoutput);
++    abstract void a(DataOutput dataoutput) throws IOException;
+ 
+-    abstract void a(DataInput datainput);
++    abstract void a(DataInput datainput) throws IOException;
+ 
+     public abstract byte a();
+ 
+@@ -24,7 +25,7 @@ public abstract class NBTBase {
+         return this;
+     }
+ 
+-    public static NBTBase b(DataInput datainput) {
++    public static NBTBase b(DataInput datainput) throws IOException {
+         byte b0 = datainput.readByte();
+ 
+         if (b0 == 0) {
+@@ -38,7 +39,7 @@ public abstract class NBTBase {
+         }
+     }
+ 
+-    public static void a(NBTBase nbtbase, DataOutput dataoutput) {
++    public static void a(NBTBase nbtbase, DataOutput dataoutput) throws IOException {
+         dataoutput.writeByte(nbtbase.a());
+         if (nbtbase.a() != 0) {
+             dataoutput.writeUTF(nbtbase.b());
+diff --git a/net/minecraft/server/NBTTagByte.java b/net/minecraft/server/NBTTagByte.java
+index fb59877..fb59413 100644
+--- a/net/minecraft/server/NBTTagByte.java
++++ b/net/minecraft/server/NBTTagByte.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInput;
+ import java.io.DataOutput;
++import java.io.IOException;
+ 
+ public class NBTTagByte extends NBTBase {
+ 
+@@ -13,11 +14,11 @@ public class NBTTagByte extends NBTBase {
+         this.a = b0;
+     }
+ 
+-    void a(DataOutput dataoutput) {
++    void a(DataOutput dataoutput) throws IOException {
+         dataoutput.writeByte(this.a);
+     }
+ 
+-    void a(DataInput datainput) {
++    void a(DataInput datainput) throws IOException {
+         this.a = datainput.readByte();
+     }
+ 
+diff --git a/net/minecraft/server/NBTTagByteArray.java b/net/minecraft/server/NBTTagByteArray.java
+index e29709f..8757d64 100644
+--- a/net/minecraft/server/NBTTagByteArray.java
++++ b/net/minecraft/server/NBTTagByteArray.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInput;
+ import java.io.DataOutput;
++import java.io.IOException;
+ 
+ public class NBTTagByteArray extends NBTBase {
+ 
+@@ -13,12 +14,12 @@ public class NBTTagByteArray extends NBTBase {
+         this.a = abyte;
+     }
+ 
+-    void a(DataOutput dataoutput) {
++    void a(DataOutput dataoutput) throws IOException {
+         dataoutput.writeInt(this.a.length);
+         dataoutput.write(this.a);
+     }
+ 
+-    void a(DataInput datainput) {
++    void a(DataInput datainput) throws IOException {
+         int i = datainput.readInt();
+ 
+         this.a = new byte[i];
+diff --git a/net/minecraft/server/NBTTagCompound.java b/net/minecraft/server/NBTTagCompound.java
+index a56e393..51d7cc8 100644
+--- a/net/minecraft/server/NBTTagCompound.java
++++ b/net/minecraft/server/NBTTagCompound.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInput;
+ import java.io.DataOutput;
++import java.io.IOException;
+ import java.util.Collection;
+ import java.util.HashMap;
+ import java.util.Iterator;
+@@ -13,7 +14,7 @@ public class NBTTagCompound extends NBTBase {
+ 
+     public NBTTagCompound() {}
+ 
+-    void a(DataOutput dataoutput) {
++    void a(DataOutput dataoutput) throws IOException {
+         Iterator iterator = this.a.values().iterator();
+ 
+         while (iterator.hasNext()) {
+@@ -25,7 +26,7 @@ public class NBTTagCompound extends NBTBase {
+         dataoutput.writeByte(0);
+     }
+ 
+-    void a(DataInput datainput) {
++    void a(DataInput datainput) throws IOException {
+         this.a.clear();
+ 
+         NBTBase nbtbase;
+diff --git a/net/minecraft/server/NBTTagDouble.java b/net/minecraft/server/NBTTagDouble.java
+index f11b368..d4458f8 100644
+--- a/net/minecraft/server/NBTTagDouble.java
++++ b/net/minecraft/server/NBTTagDouble.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInput;
+ import java.io.DataOutput;
++import java.io.IOException;
+ 
+ public class NBTTagDouble extends NBTBase {
+ 
+@@ -13,11 +14,11 @@ public class NBTTagDouble extends NBTBase {
+         this.a = d0;
+     }
+ 
+-    void a(DataOutput dataoutput) {
++    void a(DataOutput dataoutput) throws IOException {
+         dataoutput.writeDouble(this.a);
+     }
+ 
+-    void a(DataInput datainput) {
++    void a(DataInput datainput) throws IOException {
+         this.a = datainput.readDouble();
+     }
+ 
+diff --git a/net/minecraft/server/NBTTagFloat.java b/net/minecraft/server/NBTTagFloat.java
+index 31b7c80..ee64cb0 100644
+--- a/net/minecraft/server/NBTTagFloat.java
++++ b/net/minecraft/server/NBTTagFloat.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInput;
+ import java.io.DataOutput;
++import java.io.IOException;
+ 
+ public class NBTTagFloat extends NBTBase {
+ 
+@@ -13,11 +14,11 @@ public class NBTTagFloat extends NBTBase {
+         this.a = f;
+     }
+ 
+-    void a(DataOutput dataoutput) {
++    void a(DataOutput dataoutput) throws IOException {
+         dataoutput.writeFloat(this.a);
+     }
+ 
+-    void a(DataInput datainput) {
++    void a(DataInput datainput) throws IOException {
+         this.a = datainput.readFloat();
+     }
+ 
+diff --git a/net/minecraft/server/NBTTagInt.java b/net/minecraft/server/NBTTagInt.java
+index 50f4c3f..888d96a 100644
+--- a/net/minecraft/server/NBTTagInt.java
++++ b/net/minecraft/server/NBTTagInt.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInput;
+ import java.io.DataOutput;
++import java.io.IOException;
+ 
+ public class NBTTagInt extends NBTBase {
+ 
+@@ -13,11 +14,11 @@ public class NBTTagInt extends NBTBase {
+         this.a = i;
+     }
+ 
+-    void a(DataOutput dataoutput) {
++    void a(DataOutput dataoutput) throws IOException {
+         dataoutput.writeInt(this.a);
+     }
+ 
+-    void a(DataInput datainput) {
++    void a(DataInput datainput) throws IOException {
+         this.a = datainput.readInt();
+     }
+ 
+diff --git a/net/minecraft/server/NBTTagList.java b/net/minecraft/server/NBTTagList.java
+index 0d75996..53fc22f 100644
+--- a/net/minecraft/server/NBTTagList.java
++++ b/net/minecraft/server/NBTTagList.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInput;
+ import java.io.DataOutput;
++import java.io.IOException;
+ import java.util.ArrayList;
+ import java.util.List;
+ 
+@@ -12,7 +13,7 @@ public class NBTTagList extends NBTBase {
+ 
+     public NBTTagList() {}
+ 
+-    void a(DataOutput dataoutput) {
++    void a(DataOutput dataoutput) throws IOException {
+         if (this.a.size() > 0) {
+             this.b = ((NBTBase) this.a.get(0)).a();
+         } else {
+@@ -27,7 +28,7 @@ public class NBTTagList extends NBTBase {
+         }
+     }
+ 
+-    void a(DataInput datainput) {
++    void a(DataInput datainput) throws IOException {
+         this.b = datainput.readByte();
+         int i = datainput.readInt();
+ 
+diff --git a/net/minecraft/server/NBTTagLong.java b/net/minecraft/server/NBTTagLong.java
+index d1e932a..f143ff7 100644
+--- a/net/minecraft/server/NBTTagLong.java
++++ b/net/minecraft/server/NBTTagLong.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInput;
+ import java.io.DataOutput;
++import java.io.IOException;
+ 
+ public class NBTTagLong extends NBTBase {
+ 
+@@ -13,11 +14,11 @@ public class NBTTagLong extends NBTBase {
+         this.a = i;
+     }
+ 
+-    void a(DataOutput dataoutput) {
++    void a(DataOutput dataoutput) throws IOException {
+         dataoutput.writeLong(this.a);
+     }
+ 
+-    void a(DataInput datainput) {
++    void a(DataInput datainput) throws IOException {
+         this.a = datainput.readLong();
+     }
+ 
+diff --git a/net/minecraft/server/NBTTagShort.java b/net/minecraft/server/NBTTagShort.java
+index 26ad444..5cb013c 100644
+--- a/net/minecraft/server/NBTTagShort.java
++++ b/net/minecraft/server/NBTTagShort.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInput;
+ import java.io.DataOutput;
++import java.io.IOException;
+ 
+ public class NBTTagShort extends NBTBase {
+ 
+@@ -13,11 +14,11 @@ public class NBTTagShort extends NBTBase {
+         this.a = short1;
+     }
+ 
+-    void a(DataOutput dataoutput) {
++    void a(DataOutput dataoutput) throws IOException {
+         dataoutput.writeShort(this.a);
+     }
+ 
+-    void a(DataInput datainput) {
++    void a(DataInput datainput) throws IOException {
+         this.a = datainput.readShort();
+     }
+ 
+diff --git a/net/minecraft/server/NBTTagString.java b/net/minecraft/server/NBTTagString.java
+index a87aec1..a52555d 100644
+--- a/net/minecraft/server/NBTTagString.java
++++ b/net/minecraft/server/NBTTagString.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInput;
+ import java.io.DataOutput;
++import java.io.IOException;
+ 
+ public class NBTTagString extends NBTBase {
+ 
+@@ -16,11 +17,11 @@ public class NBTTagString extends NBTBase {
+         }
+     }
+ 
+-    void a(DataOutput dataoutput) {
++    void a(DataOutput dataoutput) throws IOException {
+         dataoutput.writeUTF(this.a);
+     }
+ 
+-    void a(DataInput datainput) {
++    void a(DataInput datainput) throws IOException {
+         this.a = datainput.readUTF();
+     }
+ 
+diff --git a/net/minecraft/server/NetLoginHandler.java b/net/minecraft/server/NetLoginHandler.java
+index fcd101c..34fa7eb 100644
+--- a/net/minecraft/server/NetLoginHandler.java
++++ b/net/minecraft/server/NetLoginHandler.java
+@@ -1,5 +1,6 @@
+ package net.minecraft.server;
+ 
++import java.io.IOException;
+ import java.net.Socket;
+ import java.util.Random;
+ import java.util.logging.Logger;
+@@ -16,7 +17,7 @@ public class NetLoginHandler extends NetHandler {
+     private Packet1Login h = null;
+     private String i = "";
+ 
+-    public NetLoginHandler(MinecraftServer minecraftserver, Socket socket, String s) {
++    public NetLoginHandler(MinecraftServer minecraftserver, Socket socket, String s) throws IOException {
+         this.server = minecraftserver;
+         this.networkManager = new NetworkManager(socket, s, this);
+         this.networkManager.f = 0;
+diff --git a/net/minecraft/server/NetworkListenThread.java b/net/minecraft/server/NetworkListenThread.java
+index 92519e9..597065d 100644
+--- a/net/minecraft/server/NetworkListenThread.java
++++ b/net/minecraft/server/NetworkListenThread.java
+@@ -1,5 +1,6 @@
+ package net.minecraft.server;
+ 
++import java.io.IOException;
+ import java.net.InetAddress;
+ import java.net.ServerSocket;
+ import java.util.ArrayList;
+@@ -17,7 +18,7 @@ public class NetworkListenThread {
+     private ArrayList h = new ArrayList();
+     public MinecraftServer c;
+ 
+-    public NetworkListenThread(MinecraftServer minecraftserver, InetAddress inetaddress, int i) {
++    public NetworkListenThread(MinecraftServer minecraftserver, InetAddress inetaddress, int i) throws IOException {
+         this.c = minecraftserver;
+         this.d = new ServerSocket(i, 0, inetaddress);
+         this.d.setPerformancePreferences(0, 2, 1);
+diff --git a/net/minecraft/server/NetworkManager.java b/net/minecraft/server/NetworkManager.java
+index 5f650ad..ffc10ee 100644
+--- a/net/minecraft/server/NetworkManager.java
++++ b/net/minecraft/server/NetworkManager.java
+@@ -3,6 +3,7 @@ package net.minecraft.server;
+ import java.io.BufferedOutputStream;
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ import java.net.Socket;
+ import java.net.SocketAddress;
+ import java.net.SocketException;
+@@ -38,7 +39,7 @@ public class NetworkManager {
+     public int f = 0;
+     private int lowPriorityQueueDelay = 50;
+ 
+-    public NetworkManager(Socket socket, String s, NetHandler nethandler) {
++    public NetworkManager(Socket socket, String s, NetHandler nethandler) throws IOException {
+         this.socket = socket;
+         this.i = socket.getRemoteSocketAddress();
+         this.p = nethandler;
+diff --git a/net/minecraft/server/NextTickListEntry.java b/net/minecraft/server/NextTickListEntry.java
+index d67d6bd..e3a096b 100644
+--- a/net/minecraft/server/NextTickListEntry.java
++++ b/net/minecraft/server/NextTickListEntry.java
+@@ -1,6 +1,6 @@
+ package net.minecraft.server;
+ 
+-public class NextTickListEntry implements Comparable {
++public class NextTickListEntry implements Comparable<NextTickListEntry> {
+ 
+     private static long f = 0L;
+     public int a;
+diff --git a/net/minecraft/server/Packet.java b/net/minecraft/server/Packet.java
+index 3cce90e..0306357 100644
+--- a/net/minecraft/server/Packet.java
++++ b/net/minecraft/server/Packet.java
+@@ -56,7 +56,7 @@ public abstract class Packet {
+         return ((Integer) b.get(this.getClass())).intValue();
+     }
+ 
+-    public static Packet a(DataInputStream datainputstream, boolean flag) {
++    public static Packet a(DataInputStream datainputstream, boolean flag) throws IOException {
+         boolean flag1 = false;
+         Packet packet = null;
+ 
+@@ -99,12 +99,12 @@ public abstract class Packet {
+         return packet;
+     }
+ 
+-    public static void a(Packet packet, DataOutputStream dataoutputstream) {
++    public static void a(Packet packet, DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.write(packet.b());
+         packet.a(dataoutputstream);
+     }
+ 
+-    public static void a(String s, DataOutputStream dataoutputstream) {
++    public static void a(String s, DataOutputStream dataoutputstream) throws IOException {
+         if (s.length() > 32767) {
+             throw new IOException("String too big");
+         } else {
+@@ -113,7 +113,7 @@ public abstract class Packet {
+         }
+     }
+ 
+-    public static String a(DataInputStream datainputstream, int i) {
++    public static String a(DataInputStream datainputstream, int i) throws IOException {
+         short short1 = datainputstream.readShort();
+ 
+         if (short1 > i) {
+@@ -131,9 +131,9 @@ public abstract class Packet {
+         }
+     }
+ 
+-    public abstract void a(DataInputStream datainputstream);
++    public abstract void a(DataInputStream datainputstream) throws IOException;
+ 
+-    public abstract void a(DataOutputStream dataoutputstream);
++    public abstract void a(DataOutputStream dataoutputstream) throws IOException;
+ 
+     public abstract void a(NetHandler nethandler);
+ 
+diff --git a/net/minecraft/server/Packet100OpenWindow.java b/net/minecraft/server/Packet100OpenWindow.java
+index 00e8283..5832f17 100644
+--- a/net/minecraft/server/Packet100OpenWindow.java
++++ b/net/minecraft/server/Packet100OpenWindow.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet100OpenWindow extends Packet {
+ 
+@@ -23,14 +24,14 @@ public class Packet100OpenWindow extends Packet {
+         nethandler.a(this);
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readByte();
+         this.b = datainputstream.readByte();
+         this.c = datainputstream.readUTF();
+         this.d = datainputstream.readByte();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeByte(this.a);
+         dataoutputstream.writeByte(this.b);
+         dataoutputstream.writeUTF(this.c);
+diff --git a/net/minecraft/server/Packet101CloseWindow.java b/net/minecraft/server/Packet101CloseWindow.java
+index 8b11076..c5929ce 100644
+--- a/net/minecraft/server/Packet101CloseWindow.java
++++ b/net/minecraft/server/Packet101CloseWindow.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet101CloseWindow extends Packet {
+ 
+@@ -17,11 +18,11 @@ public class Packet101CloseWindow extends Packet {
+         nethandler.a(this);
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readByte();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeByte(this.a);
+     }
+ 
+diff --git a/net/minecraft/server/Packet102WindowClick.java b/net/minecraft/server/Packet102WindowClick.java
+index 3e30878..b8e93db 100644
+--- a/net/minecraft/server/Packet102WindowClick.java
++++ b/net/minecraft/server/Packet102WindowClick.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet102WindowClick extends Packet {
+ 
+@@ -18,7 +19,7 @@ public class Packet102WindowClick extends Packet {
+         nethandler.a(this);
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readByte();
+         this.b = datainputstream.readShort();
+         this.c = datainputstream.readByte();
+@@ -36,7 +37,7 @@ public class Packet102WindowClick extends Packet {
+         }
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeByte(this.a);
+         dataoutputstream.writeShort(this.b);
+         dataoutputstream.writeByte(this.c);
+diff --git a/net/minecraft/server/Packet103SetSlot.java b/net/minecraft/server/Packet103SetSlot.java
+index d37ee75..47699f5 100644
+--- a/net/minecraft/server/Packet103SetSlot.java
++++ b/net/minecraft/server/Packet103SetSlot.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet103SetSlot extends Packet {
+ 
+@@ -21,7 +22,7 @@ public class Packet103SetSlot extends Packet {
+         nethandler.a(this);
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readByte();
+         this.b = datainputstream.readShort();
+         short short1 = datainputstream.readShort();
+@@ -36,7 +37,7 @@ public class Packet103SetSlot extends Packet {
+         }
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeByte(this.a);
+         dataoutputstream.writeShort(this.b);
+         if (this.c == null) {
+diff --git a/net/minecraft/server/Packet104WindowItems.java b/net/minecraft/server/Packet104WindowItems.java
+index 9434ce6..abd6f20 100644
+--- a/net/minecraft/server/Packet104WindowItems.java
++++ b/net/minecraft/server/Packet104WindowItems.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ import java.util.List;
+ 
+ public class Packet104WindowItems extends Packet {
+@@ -22,7 +23,7 @@ public class Packet104WindowItems extends Packet {
+         }
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readByte();
+         short short1 = datainputstream.readShort();
+ 
+@@ -40,7 +41,7 @@ public class Packet104WindowItems extends Packet {
+         }
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeByte(this.a);
+         dataoutputstream.writeShort(this.b.length);
+ 
+diff --git a/net/minecraft/server/Packet105CraftProgressBar.java b/net/minecraft/server/Packet105CraftProgressBar.java
+index 032c2b4..33e5e91 100644
+--- a/net/minecraft/server/Packet105CraftProgressBar.java
++++ b/net/minecraft/server/Packet105CraftProgressBar.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet105CraftProgressBar extends Packet {
+ 
+@@ -21,13 +22,13 @@ public class Packet105CraftProgressBar extends Packet {
+         nethandler.a(this);
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readByte();
+         this.b = datainputstream.readShort();
+         this.c = datainputstream.readShort();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeByte(this.a);
+         dataoutputstream.writeShort(this.b);
+         dataoutputstream.writeShort(this.c);
+diff --git a/net/minecraft/server/Packet106Transaction.java b/net/minecraft/server/Packet106Transaction.java
+index 5615e37..ce64488 100644
+--- a/net/minecraft/server/Packet106Transaction.java
++++ b/net/minecraft/server/Packet106Transaction.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet106Transaction extends Packet {
+ 
+@@ -21,13 +22,13 @@ public class Packet106Transaction extends Packet {
+         nethandler.a(this);
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readByte();
+         this.b = datainputstream.readShort();
+         this.c = datainputstream.readByte() != 0;
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeByte(this.a);
+         dataoutputstream.writeShort(this.b);
+         dataoutputstream.writeByte(this.c ? 1 : 0);
+diff --git a/net/minecraft/server/Packet10Flying.java b/net/minecraft/server/Packet10Flying.java
+index 505e0ea..8d6bfb9 100644
+--- a/net/minecraft/server/Packet10Flying.java
++++ b/net/minecraft/server/Packet10Flying.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet10Flying extends Packet {
+ 
+@@ -21,11 +22,11 @@ public class Packet10Flying extends Packet {
+         nethandler.a(this);
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.g = datainputstream.read() != 0;
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.write(this.g ? 1 : 0);
+     }
+ 
+diff --git a/net/minecraft/server/Packet11PlayerPosition.java b/net/minecraft/server/Packet11PlayerPosition.java
+index a46efe1..66f1015 100644
+--- a/net/minecraft/server/Packet11PlayerPosition.java
++++ b/net/minecraft/server/Packet11PlayerPosition.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet11PlayerPosition extends Packet10Flying {
+ 
+@@ -9,7 +10,7 @@ public class Packet11PlayerPosition extends Packet10Flying {
+         this.h = true;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.x = datainputstream.readDouble();
+         this.y = datainputstream.readDouble();
+         this.stance = datainputstream.readDouble();
+@@ -17,7 +18,7 @@ public class Packet11PlayerPosition extends Packet10Flying {
+         super.a(datainputstream);
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeDouble(this.x);
+         dataoutputstream.writeDouble(this.y);
+         dataoutputstream.writeDouble(this.stance);
+diff --git a/net/minecraft/server/Packet12PlayerLook.java b/net/minecraft/server/Packet12PlayerLook.java
+index f8a0dd3..d872465 100644
+--- a/net/minecraft/server/Packet12PlayerLook.java
++++ b/net/minecraft/server/Packet12PlayerLook.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet12PlayerLook extends Packet10Flying {
+ 
+@@ -9,13 +10,13 @@ public class Packet12PlayerLook extends Packet10Flying {
+         this.hasLook = true;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.yaw = datainputstream.readFloat();
+         this.pitch = datainputstream.readFloat();
+         super.a(datainputstream);
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeFloat(this.yaw);
+         dataoutputstream.writeFloat(this.pitch);
+         super.a(dataoutputstream);
+diff --git a/net/minecraft/server/Packet130UpdateSign.java b/net/minecraft/server/Packet130UpdateSign.java
+index a63057f..f68432d 100644
+--- a/net/minecraft/server/Packet130UpdateSign.java
++++ b/net/minecraft/server/Packet130UpdateSign.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet130UpdateSign extends Packet {
+ 
+@@ -22,7 +23,7 @@ public class Packet130UpdateSign extends Packet {
+         this.lines = astring;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.x = datainputstream.readInt();
+         this.y = datainputstream.readShort();
+         this.z = datainputstream.readInt();
+@@ -33,7 +34,7 @@ public class Packet130UpdateSign extends Packet {
+         }
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.x);
+         dataoutputstream.writeShort(this.y);
+         dataoutputstream.writeInt(this.z);
+diff --git a/net/minecraft/server/Packet131.java b/net/minecraft/server/Packet131.java
+index 6fec166..d879a8d 100644
+--- a/net/minecraft/server/Packet131.java
++++ b/net/minecraft/server/Packet131.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet131 extends Packet {
+ 
+@@ -20,14 +21,14 @@ public class Packet131 extends Packet {
+         this.c = abyte;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readShort();
+         this.b = datainputstream.readShort();
+         this.c = new byte[datainputstream.readByte() & 255];
+         datainputstream.readFully(this.c);
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeShort(this.a);
+         dataoutputstream.writeShort(this.b);
+         dataoutputstream.writeByte(this.c.length);
+diff --git a/net/minecraft/server/Packet13PlayerLookMove.java b/net/minecraft/server/Packet13PlayerLookMove.java
+index 2ab42a1..0dfe286 100644
+--- a/net/minecraft/server/Packet13PlayerLookMove.java
++++ b/net/minecraft/server/Packet13PlayerLookMove.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet13PlayerLookMove extends Packet10Flying {
+ 
+@@ -22,7 +23,7 @@ public class Packet13PlayerLookMove extends Packet10Flying {
+         this.h = true;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.x = datainputstream.readDouble();
+         this.y = datainputstream.readDouble();
+         this.stance = datainputstream.readDouble();
+@@ -32,7 +33,7 @@ public class Packet13PlayerLookMove extends Packet10Flying {
+         super.a(datainputstream);
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeDouble(this.x);
+         dataoutputstream.writeDouble(this.y);
+         dataoutputstream.writeDouble(this.stance);
+diff --git a/net/minecraft/server/Packet14BlockDig.java b/net/minecraft/server/Packet14BlockDig.java
+index 74e9953..835a817 100644
+--- a/net/minecraft/server/Packet14BlockDig.java
++++ b/net/minecraft/server/Packet14BlockDig.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet14BlockDig extends Packet {
+ 
+@@ -13,7 +14,7 @@ public class Packet14BlockDig extends Packet {
+ 
+     public Packet14BlockDig() {}
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.e = datainputstream.read();
+         this.a = datainputstream.readInt();
+         this.b = datainputstream.read();
+@@ -21,7 +22,7 @@ public class Packet14BlockDig extends Packet {
+         this.face = datainputstream.read();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.write(this.e);
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.write(this.b);
+diff --git a/net/minecraft/server/Packet15Place.java b/net/minecraft/server/Packet15Place.java
+index 6b5e479..0b0d18b 100644
+--- a/net/minecraft/server/Packet15Place.java
++++ b/net/minecraft/server/Packet15Place.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet15Place extends Packet {
+ 
+@@ -13,7 +14,7 @@ public class Packet15Place extends Packet {
+ 
+     public Packet15Place() {}
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.b = datainputstream.read();
+         this.c = datainputstream.readInt();
+@@ -30,7 +31,7 @@ public class Packet15Place extends Packet {
+         }
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.write(this.b);
+         dataoutputstream.writeInt(this.c);
+diff --git a/net/minecraft/server/Packet16BlockItemSwitch.java b/net/minecraft/server/Packet16BlockItemSwitch.java
+index 2dc95a3..e3ea7e5 100644
+--- a/net/minecraft/server/Packet16BlockItemSwitch.java
++++ b/net/minecraft/server/Packet16BlockItemSwitch.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet16BlockItemSwitch extends Packet {
+ 
+@@ -9,11 +10,11 @@ public class Packet16BlockItemSwitch extends Packet {
+ 
+     public Packet16BlockItemSwitch() {}
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.itemInHandIndex = datainputstream.readShort();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeShort(this.itemInHandIndex);
+     }
+ 
+diff --git a/net/minecraft/server/Packet17.java b/net/minecraft/server/Packet17.java
+index 3949c1c..60581e3 100644
+--- a/net/minecraft/server/Packet17.java
++++ b/net/minecraft/server/Packet17.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet17 extends Packet {
+ 
+@@ -21,7 +22,7 @@ public class Packet17 extends Packet {
+         this.a = entity.id;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.e = datainputstream.readByte();
+         this.b = datainputstream.readInt();
+@@ -29,7 +30,7 @@ public class Packet17 extends Packet {
+         this.d = datainputstream.readInt();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.writeByte(this.e);
+         dataoutputstream.writeInt(this.b);
+diff --git a/net/minecraft/server/Packet18ArmAnimation.java b/net/minecraft/server/Packet18ArmAnimation.java
+index fd36912..53ed5a7 100644
+--- a/net/minecraft/server/Packet18ArmAnimation.java
++++ b/net/minecraft/server/Packet18ArmAnimation.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet18ArmAnimation extends Packet {
+ 
+@@ -15,12 +16,12 @@ public class Packet18ArmAnimation extends Packet {
+         this.b = i;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.b = datainputstream.readByte();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.writeByte(this.b);
+     }
+diff --git a/net/minecraft/server/Packet19EntityAction.java b/net/minecraft/server/Packet19EntityAction.java
+index 2fc6941..24436fb 100644
+--- a/net/minecraft/server/Packet19EntityAction.java
++++ b/net/minecraft/server/Packet19EntityAction.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet19EntityAction extends Packet {
+ 
+@@ -10,12 +11,12 @@ public class Packet19EntityAction extends Packet {
+ 
+     public Packet19EntityAction() {}
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.animation = datainputstream.readByte();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.writeByte(this.animation);
+     }
+diff --git a/net/minecraft/server/Packet1Login.java b/net/minecraft/server/Packet1Login.java
+index 19c209d..1422bc1 100644
+--- a/net/minecraft/server/Packet1Login.java
++++ b/net/minecraft/server/Packet1Login.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet1Login extends Packet {
+ 
+@@ -19,14 +20,14 @@ public class Packet1Login extends Packet {
+         this.d = b0;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.name = a(datainputstream, 16);
+         this.c = datainputstream.readLong();
+         this.d = datainputstream.readByte();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         a(this.name, dataoutputstream);
+         dataoutputstream.writeLong(this.c);
+diff --git a/net/minecraft/server/Packet200Statistic.java b/net/minecraft/server/Packet200Statistic.java
+index 18232f8..0438e97 100644
+--- a/net/minecraft/server/Packet200Statistic.java
++++ b/net/minecraft/server/Packet200Statistic.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet200Statistic extends Packet {
+ 
+@@ -19,12 +20,12 @@ public class Packet200Statistic extends Packet {
+         nethandler.a(this);
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.b = datainputstream.readByte();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.writeByte(this.b);
+     }
+diff --git a/net/minecraft/server/Packet20NamedEntitySpawn.java b/net/minecraft/server/Packet20NamedEntitySpawn.java
+index aadd0f7..09e33ce 100644
+--- a/net/minecraft/server/Packet20NamedEntitySpawn.java
++++ b/net/minecraft/server/Packet20NamedEntitySpawn.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet20NamedEntitySpawn extends Packet {
+ 
+@@ -29,7 +30,7 @@ public class Packet20NamedEntitySpawn extends Packet {
+         this.h = itemstack == null ? 0 : itemstack.id;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.b = a(datainputstream, 16);
+         this.c = datainputstream.readInt();
+@@ -40,7 +41,7 @@ public class Packet20NamedEntitySpawn extends Packet {
+         this.h = datainputstream.readShort();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         a(this.b, dataoutputstream);
+         dataoutputstream.writeInt(this.c);
+diff --git a/net/minecraft/server/Packet21PickupSpawn.java b/net/minecraft/server/Packet21PickupSpawn.java
+index e945a84..a5d3082 100644
+--- a/net/minecraft/server/Packet21PickupSpawn.java
++++ b/net/minecraft/server/Packet21PickupSpawn.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet21PickupSpawn extends Packet {
+ 
+@@ -31,7 +32,7 @@ public class Packet21PickupSpawn extends Packet {
+         this.g = (byte) ((int) (entityitem.motZ * 128.0D));
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.h = datainputstream.readShort();
+         this.i = datainputstream.readByte();
+@@ -44,7 +45,7 @@ public class Packet21PickupSpawn extends Packet {
+         this.g = datainputstream.readByte();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.writeShort(this.h);
+         dataoutputstream.writeByte(this.i);
+diff --git a/net/minecraft/server/Packet22Collect.java b/net/minecraft/server/Packet22Collect.java
+index 03692cb..9f128bb 100644
+--- a/net/minecraft/server/Packet22Collect.java
++++ b/net/minecraft/server/Packet22Collect.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet22Collect extends Packet {
+ 
+@@ -15,12 +16,12 @@ public class Packet22Collect extends Packet {
+         this.b = j;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.b = datainputstream.readInt();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.writeInt(this.b);
+     }
+diff --git a/net/minecraft/server/Packet23VehicleSpawn.java b/net/minecraft/server/Packet23VehicleSpawn.java
+index 32fd8ae..1116df2 100644
+--- a/net/minecraft/server/Packet23VehicleSpawn.java
++++ b/net/minecraft/server/Packet23VehicleSpawn.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet23VehicleSpawn extends Packet {
+ 
+@@ -64,7 +65,7 @@ public class Packet23VehicleSpawn extends Packet {
+         }
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.h = datainputstream.readByte();
+         this.b = datainputstream.readInt();
+@@ -78,7 +79,7 @@ public class Packet23VehicleSpawn extends Packet {
+         }
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.writeByte(this.h);
+         dataoutputstream.writeInt(this.b);
+diff --git a/net/minecraft/server/Packet24MobSpawn.java b/net/minecraft/server/Packet24MobSpawn.java
+index 01dd8fc..262b9b8 100644
+--- a/net/minecraft/server/Packet24MobSpawn.java
++++ b/net/minecraft/server/Packet24MobSpawn.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ import java.util.List;
+ 
+ public class Packet24MobSpawn extends Packet {
+@@ -29,7 +30,7 @@ public class Packet24MobSpawn extends Packet {
+         this.h = entityliving.aa();
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.b = datainputstream.readByte();
+         this.c = datainputstream.readInt();
+@@ -40,7 +41,7 @@ public class Packet24MobSpawn extends Packet {
+         this.i = DataWatcher.a(datainputstream);
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.writeByte(this.b);
+         dataoutputstream.writeInt(this.c);
+diff --git a/net/minecraft/server/Packet255KickDisconnect.java b/net/minecraft/server/Packet255KickDisconnect.java
+index f78be42..6230574 100644
+--- a/net/minecraft/server/Packet255KickDisconnect.java
++++ b/net/minecraft/server/Packet255KickDisconnect.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet255KickDisconnect extends Packet {
+ 
+@@ -13,11 +14,11 @@ public class Packet255KickDisconnect extends Packet {
+         this.a = s;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = a(datainputstream, 100);
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         a(this.a, dataoutputstream);
+     }
+ 
+diff --git a/net/minecraft/server/Packet25EntityPainting.java b/net/minecraft/server/Packet25EntityPainting.java
+index 29bd9aa..eac0998 100644
+--- a/net/minecraft/server/Packet25EntityPainting.java
++++ b/net/minecraft/server/Packet25EntityPainting.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet25EntityPainting extends Packet {
+ 
+@@ -23,7 +24,7 @@ public class Packet25EntityPainting extends Packet {
+         this.f = entitypainting.e.A;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.f = a(datainputstream, EnumArt.z);
+         this.b = datainputstream.readInt();
+@@ -32,7 +33,7 @@ public class Packet25EntityPainting extends Packet {
+         this.e = datainputstream.readInt();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         a(this.f, dataoutputstream);
+         dataoutputstream.writeInt(this.b);
+diff --git a/net/minecraft/server/Packet27.java b/net/minecraft/server/Packet27.java
+index 452d46d..13caee0 100644
+--- a/net/minecraft/server/Packet27.java
++++ b/net/minecraft/server/Packet27.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet27 extends Packet {
+ 
+@@ -14,7 +15,7 @@ public class Packet27 extends Packet {
+ 
+     public Packet27() {}
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readFloat();
+         this.b = datainputstream.readFloat();
+         this.e = datainputstream.readFloat();
+@@ -23,7 +24,7 @@ public class Packet27 extends Packet {
+         this.d = datainputstream.readBoolean();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeFloat(this.a);
+         dataoutputstream.writeFloat(this.b);
+         dataoutputstream.writeFloat(this.e);
+diff --git a/net/minecraft/server/Packet28EntityVelocity.java b/net/minecraft/server/Packet28EntityVelocity.java
+index ccf93ce..5abcae1 100644
+--- a/net/minecraft/server/Packet28EntityVelocity.java
++++ b/net/minecraft/server/Packet28EntityVelocity.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet28EntityVelocity extends Packet {
+ 
+@@ -49,14 +50,14 @@ public class Packet28EntityVelocity extends Packet {
+         this.d = (int) (d2 * 8000.0D);
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.b = datainputstream.readShort();
+         this.c = datainputstream.readShort();
+         this.d = datainputstream.readShort();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.writeShort(this.b);
+         dataoutputstream.writeShort(this.c);
+diff --git a/net/minecraft/server/Packet29DestroyEntity.java b/net/minecraft/server/Packet29DestroyEntity.java
+index 9e3f2b2..a667ada 100644
+--- a/net/minecraft/server/Packet29DestroyEntity.java
++++ b/net/minecraft/server/Packet29DestroyEntity.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet29DestroyEntity extends Packet {
+ 
+@@ -13,11 +14,11 @@ public class Packet29DestroyEntity extends Packet {
+         this.a = i;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+     }
+ 
+diff --git a/net/minecraft/server/Packet2Handshake.java b/net/minecraft/server/Packet2Handshake.java
+index 0c99b76..c1700d1 100644
+--- a/net/minecraft/server/Packet2Handshake.java
++++ b/net/minecraft/server/Packet2Handshake.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet2Handshake extends Packet {
+ 
+@@ -13,11 +14,11 @@ public class Packet2Handshake extends Packet {
+         this.a = s;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = a(datainputstream, 32);
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         a(this.a, dataoutputstream);
+     }
+ 
+diff --git a/net/minecraft/server/Packet30Entity.java b/net/minecraft/server/Packet30Entity.java
+index ec173af..8ddbc07 100644
+--- a/net/minecraft/server/Packet30Entity.java
++++ b/net/minecraft/server/Packet30Entity.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet30Entity extends Packet {
+ 
+@@ -19,11 +20,11 @@ public class Packet30Entity extends Packet {
+         this.a = i;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+     }
+ 
+diff --git a/net/minecraft/server/Packet31RelEntityMove.java b/net/minecraft/server/Packet31RelEntityMove.java
+index a8f1b8a..5348c4b 100644
+--- a/net/minecraft/server/Packet31RelEntityMove.java
++++ b/net/minecraft/server/Packet31RelEntityMove.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet31RelEntityMove extends Packet30Entity {
+ 
+@@ -14,14 +15,14 @@ public class Packet31RelEntityMove extends Packet30Entity {
+         this.d = b2;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         super.a(datainputstream);
+         this.b = datainputstream.readByte();
+         this.c = datainputstream.readByte();
+         this.d = datainputstream.readByte();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         super.a(dataoutputstream);
+         dataoutputstream.writeByte(this.b);
+         dataoutputstream.writeByte(this.c);
+diff --git a/net/minecraft/server/Packet32EntityLook.java b/net/minecraft/server/Packet32EntityLook.java
+index a0cf35d..69f3a74 100644
+--- a/net/minecraft/server/Packet32EntityLook.java
++++ b/net/minecraft/server/Packet32EntityLook.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet32EntityLook extends Packet30Entity {
+ 
+@@ -16,13 +17,13 @@ public class Packet32EntityLook extends Packet30Entity {
+         this.g = true;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         super.a(datainputstream);
+         this.e = datainputstream.readByte();
+         this.f = datainputstream.readByte();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         super.a(dataoutputstream);
+         dataoutputstream.writeByte(this.e);
+         dataoutputstream.writeByte(this.f);
+diff --git a/net/minecraft/server/Packet33RelEntityMoveLook.java b/net/minecraft/server/Packet33RelEntityMoveLook.java
+index b35affa..80a5e8b 100644
+--- a/net/minecraft/server/Packet33RelEntityMoveLook.java
++++ b/net/minecraft/server/Packet33RelEntityMoveLook.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet33RelEntityMoveLook extends Packet30Entity {
+ 
+@@ -19,7 +20,7 @@ public class Packet33RelEntityMoveLook extends Packet30Entity {
+         this.g = true;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         super.a(datainputstream);
+         this.b = datainputstream.readByte();
+         this.c = datainputstream.readByte();
+@@ -28,7 +29,7 @@ public class Packet33RelEntityMoveLook extends Packet30Entity {
+         this.f = datainputstream.readByte();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         super.a(dataoutputstream);
+         dataoutputstream.writeByte(this.b);
+         dataoutputstream.writeByte(this.c);
+diff --git a/net/minecraft/server/Packet34EntityTeleport.java b/net/minecraft/server/Packet34EntityTeleport.java
+index 229f648..7f3c62e 100644
+--- a/net/minecraft/server/Packet34EntityTeleport.java
++++ b/net/minecraft/server/Packet34EntityTeleport.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet34EntityTeleport extends Packet {
+ 
+@@ -32,7 +33,7 @@ public class Packet34EntityTeleport extends Packet {
+         this.f = b1;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.b = datainputstream.readInt();
+         this.c = datainputstream.readInt();
+@@ -41,7 +42,7 @@ public class Packet34EntityTeleport extends Packet {
+         this.f = (byte) datainputstream.read();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.writeInt(this.b);
+         dataoutputstream.writeInt(this.c);
+diff --git a/net/minecraft/server/Packet38EntityStatus.java b/net/minecraft/server/Packet38EntityStatus.java
+index e5d935b..df43c9f 100644
+--- a/net/minecraft/server/Packet38EntityStatus.java
++++ b/net/minecraft/server/Packet38EntityStatus.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet38EntityStatus extends Packet {
+ 
+@@ -15,12 +16,12 @@ public class Packet38EntityStatus extends Packet {
+         this.b = b0;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.b = datainputstream.readByte();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.writeByte(this.b);
+     }
+diff --git a/net/minecraft/server/Packet39AttachEntity.java b/net/minecraft/server/Packet39AttachEntity.java
+index 5a1c631..4666b9e 100644
+--- a/net/minecraft/server/Packet39AttachEntity.java
++++ b/net/minecraft/server/Packet39AttachEntity.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet39AttachEntity extends Packet {
+ 
+@@ -19,12 +20,12 @@ public class Packet39AttachEntity extends Packet {
+         return 8;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.b = datainputstream.readInt();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.writeInt(this.b);
+     }
+diff --git a/net/minecraft/server/Packet3Chat.java b/net/minecraft/server/Packet3Chat.java
+index 7bf58b5..ab9aea1 100644
+--- a/net/minecraft/server/Packet3Chat.java
++++ b/net/minecraft/server/Packet3Chat.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet3Chat extends Packet {
+ 
+@@ -17,11 +18,11 @@ public class Packet3Chat extends Packet {
+         this.message = s;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.message = a(datainputstream, 119);
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         a(this.message, dataoutputstream);
+     }
+ 
+diff --git a/net/minecraft/server/Packet40EntityMetadata.java b/net/minecraft/server/Packet40EntityMetadata.java
+index c868cb1..6e86279 100644
+--- a/net/minecraft/server/Packet40EntityMetadata.java
++++ b/net/minecraft/server/Packet40EntityMetadata.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ import java.util.List;
+ 
+ public class Packet40EntityMetadata extends Packet {
+@@ -16,12 +17,12 @@ public class Packet40EntityMetadata extends Packet {
+         this.b = datawatcher.b();
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.b = DataWatcher.a(datainputstream);
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         DataWatcher.a(this.b, dataoutputstream);
+     }
+diff --git a/net/minecraft/server/Packet4UpdateTime.java b/net/minecraft/server/Packet4UpdateTime.java
+index 693cb34..7d507d5 100644
+--- a/net/minecraft/server/Packet4UpdateTime.java
++++ b/net/minecraft/server/Packet4UpdateTime.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet4UpdateTime extends Packet {
+ 
+@@ -13,11 +14,11 @@ public class Packet4UpdateTime extends Packet {
+         this.a = i;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readLong();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeLong(this.a);
+     }
+ 
+diff --git a/net/minecraft/server/Packet50PreChunk.java b/net/minecraft/server/Packet50PreChunk.java
+index ed8cf66..2a191b5 100644
+--- a/net/minecraft/server/Packet50PreChunk.java
++++ b/net/minecraft/server/Packet50PreChunk.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet50PreChunk extends Packet {
+ 
+@@ -20,13 +21,13 @@ public class Packet50PreChunk extends Packet {
+         this.c = flag;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.b = datainputstream.readInt();
+         this.c = datainputstream.read() != 0;
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.writeInt(this.b);
+         dataoutputstream.write(this.c ? 1 : 0);
+diff --git a/net/minecraft/server/Packet51MapChunk.java b/net/minecraft/server/Packet51MapChunk.java
+index 29e984a..8448330 100644
+--- a/net/minecraft/server/Packet51MapChunk.java
++++ b/net/minecraft/server/Packet51MapChunk.java
+@@ -43,7 +43,7 @@ public class Packet51MapChunk extends Packet {
+         }
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.b = datainputstream.readShort();
+         this.c = datainputstream.readInt();
+@@ -68,7 +68,7 @@ public class Packet51MapChunk extends Packet {
+         }
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.writeShort(this.b);
+         dataoutputstream.writeInt(this.c);
+diff --git a/net/minecraft/server/Packet52MultiBlockChange.java b/net/minecraft/server/Packet52MultiBlockChange.java
+index 23019e8..28163cb 100644
+--- a/net/minecraft/server/Packet52MultiBlockChange.java
++++ b/net/minecraft/server/Packet52MultiBlockChange.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet52MultiBlockChange extends Packet {
+ 
+@@ -37,7 +38,7 @@ public class Packet52MultiBlockChange extends Packet {
+         }
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.b = datainputstream.readInt();
+         this.f = datainputstream.readShort() & '\uffff';
+@@ -53,7 +54,7 @@ public class Packet52MultiBlockChange extends Packet {
+         datainputstream.readFully(this.e);
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.writeInt(this.b);
+         dataoutputstream.writeShort((short) this.f);
+diff --git a/net/minecraft/server/Packet53BlockChange.java b/net/minecraft/server/Packet53BlockChange.java
+index d589a85..a0b3a8a 100644
+--- a/net/minecraft/server/Packet53BlockChange.java
++++ b/net/minecraft/server/Packet53BlockChange.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet53BlockChange extends Packet {
+ 
+@@ -24,7 +25,7 @@ public class Packet53BlockChange extends Packet {
+         this.data = world.getData(i, j, k);
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.b = datainputstream.read();
+         this.c = datainputstream.readInt();
+@@ -32,7 +33,7 @@ public class Packet53BlockChange extends Packet {
+         this.data = datainputstream.read();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.write(this.b);
+         dataoutputstream.writeInt(this.c);
+diff --git a/net/minecraft/server/Packet54PlayNoteBlock.java b/net/minecraft/server/Packet54PlayNoteBlock.java
+index 665e267..f5a6927 100644
+--- a/net/minecraft/server/Packet54PlayNoteBlock.java
++++ b/net/minecraft/server/Packet54PlayNoteBlock.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet54PlayNoteBlock extends Packet {
+ 
+@@ -21,7 +22,7 @@ public class Packet54PlayNoteBlock extends Packet {
+         this.e = i1;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.b = datainputstream.readShort();
+         this.c = datainputstream.readInt();
+@@ -29,7 +30,7 @@ public class Packet54PlayNoteBlock extends Packet {
+         this.e = datainputstream.read();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.writeShort(this.b);
+         dataoutputstream.writeInt(this.c);
+diff --git a/net/minecraft/server/Packet5EntityEquipment.java b/net/minecraft/server/Packet5EntityEquipment.java
+index ae41b88..00725c8 100644
+--- a/net/minecraft/server/Packet5EntityEquipment.java
++++ b/net/minecraft/server/Packet5EntityEquipment.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet5EntityEquipment extends Packet {
+ 
+@@ -24,14 +25,14 @@ public class Packet5EntityEquipment extends Packet {
+         }
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.b = datainputstream.readShort();
+         this.c = datainputstream.readShort();
+         this.d = datainputstream.readShort();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.writeShort(this.b);
+         dataoutputstream.writeShort(this.c);
+diff --git a/net/minecraft/server/Packet60Explosion.java b/net/minecraft/server/Packet60Explosion.java
+index a70a99d..61b9602 100644
+--- a/net/minecraft/server/Packet60Explosion.java
++++ b/net/minecraft/server/Packet60Explosion.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ import java.util.HashSet;
+ import java.util.Iterator;
+ import java.util.Set;
+@@ -24,7 +25,7 @@ public class Packet60Explosion extends Packet {
+         this.e = new HashSet(set);
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readDouble();
+         this.b = datainputstream.readDouble();
+         this.c = datainputstream.readDouble();
+@@ -45,7 +46,7 @@ public class Packet60Explosion extends Packet {
+         }
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeDouble(this.a);
+         dataoutputstream.writeDouble(this.b);
+         dataoutputstream.writeDouble(this.c);
+diff --git a/net/minecraft/server/Packet61.java b/net/minecraft/server/Packet61.java
+index 56c8376..a051829 100644
+--- a/net/minecraft/server/Packet61.java
++++ b/net/minecraft/server/Packet61.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet61 extends Packet {
+ 
+@@ -21,7 +22,7 @@ public class Packet61 extends Packet {
+         this.b = i1;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.c = datainputstream.readInt();
+         this.d = datainputstream.readByte();
+@@ -29,7 +30,7 @@ public class Packet61 extends Packet {
+         this.b = datainputstream.readInt();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.writeInt(this.c);
+         dataoutputstream.writeByte(this.d);
+diff --git a/net/minecraft/server/Packet6SpawnPosition.java b/net/minecraft/server/Packet6SpawnPosition.java
+index cfc9f4c..080e44f 100644
+--- a/net/minecraft/server/Packet6SpawnPosition.java
++++ b/net/minecraft/server/Packet6SpawnPosition.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet6SpawnPosition extends Packet {
+ 
+@@ -17,13 +18,13 @@ public class Packet6SpawnPosition extends Packet {
+         this.z = k;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.x = datainputstream.readInt();
+         this.y = datainputstream.readInt();
+         this.z = datainputstream.readInt();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.x);
+         dataoutputstream.writeInt(this.y);
+         dataoutputstream.writeInt(this.z);
+diff --git a/net/minecraft/server/Packet70Bed.java b/net/minecraft/server/Packet70Bed.java
+index 2fa597f..a965a2c 100644
+--- a/net/minecraft/server/Packet70Bed.java
++++ b/net/minecraft/server/Packet70Bed.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet70Bed extends Packet {
+ 
+@@ -14,11 +15,11 @@ public class Packet70Bed extends Packet {
+         this.b = i;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.b = datainputstream.readByte();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeByte(this.b);
+     }
+ 
+diff --git a/net/minecraft/server/Packet71Weather.java b/net/minecraft/server/Packet71Weather.java
+index 6ad38db..8d53c34 100644
+--- a/net/minecraft/server/Packet71Weather.java
++++ b/net/minecraft/server/Packet71Weather.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet71Weather extends Packet {
+ 
+@@ -23,7 +24,7 @@ public class Packet71Weather extends Packet {
+         }
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.e = datainputstream.readByte();
+         this.b = datainputstream.readInt();
+@@ -31,7 +32,7 @@ public class Packet71Weather extends Packet {
+         this.d = datainputstream.readInt();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.writeByte(this.e);
+         dataoutputstream.writeInt(this.b);
+diff --git a/net/minecraft/server/Packet7UseEntity.java b/net/minecraft/server/Packet7UseEntity.java
+index 6e62212..03fde2f 100644
+--- a/net/minecraft/server/Packet7UseEntity.java
++++ b/net/minecraft/server/Packet7UseEntity.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet7UseEntity extends Packet {
+ 
+@@ -11,13 +12,13 @@ public class Packet7UseEntity extends Packet {
+ 
+     public Packet7UseEntity() {}
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readInt();
+         this.target = datainputstream.readInt();
+         this.c = datainputstream.readByte();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeInt(this.a);
+         dataoutputstream.writeInt(this.target);
+         dataoutputstream.writeByte(this.c);
+diff --git a/net/minecraft/server/Packet8UpdateHealth.java b/net/minecraft/server/Packet8UpdateHealth.java
+index e949170..783a785 100644
+--- a/net/minecraft/server/Packet8UpdateHealth.java
++++ b/net/minecraft/server/Packet8UpdateHealth.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet8UpdateHealth extends Packet {
+ 
+@@ -13,11 +14,11 @@ public class Packet8UpdateHealth extends Packet {
+         this.a = i;
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readShort();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeShort(this.a);
+     }
+ 
+diff --git a/net/minecraft/server/Packet9Respawn.java b/net/minecraft/server/Packet9Respawn.java
+index 3c1a4c2..4821d07 100644
+--- a/net/minecraft/server/Packet9Respawn.java
++++ b/net/minecraft/server/Packet9Respawn.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
++import java.io.IOException;
+ 
+ public class Packet9Respawn extends Packet {
+ 
+@@ -17,11 +18,11 @@ public class Packet9Respawn extends Packet {
+         nethandler.a(this);
+     }
+ 
+-    public void a(DataInputStream datainputstream) {
++    public void a(DataInputStream datainputstream) throws IOException {
+         this.a = datainputstream.readByte();
+     }
+ 
+-    public void a(DataOutputStream dataoutputstream) {
++    public void a(DataOutputStream dataoutputstream) throws IOException {
+         dataoutputstream.writeByte(this.a);
+     }
+ 
+diff --git a/net/minecraft/server/RecipeSorter.java b/net/minecraft/server/RecipeSorter.java
+index 855bb93..ab1d3e4 100644
+--- a/net/minecraft/server/RecipeSorter.java
++++ b/net/minecraft/server/RecipeSorter.java
+@@ -2,7 +2,7 @@ package net.minecraft.server;
+ 
+ import java.util.Comparator;
+ 
+-class RecipeSorter implements Comparator {
++class RecipeSorter implements Comparator<CraftingRecipe> {
+ 
+     final CraftingManager a;
+ 
+@@ -10,7 +10,7 @@ class RecipeSorter implements Comparator {
+         this.a = craftingmanager;
+     }
+ 
+-    public int a(CraftingRecipe craftingrecipe, CraftingRecipe craftingrecipe1) {
++    public int compare(CraftingRecipe craftingrecipe, CraftingRecipe craftingrecipe1) {
+         return craftingrecipe instanceof ShapelessRecipes && craftingrecipe1 instanceof ShapedRecipes ? 1 : (craftingrecipe1 instanceof ShapelessRecipes && craftingrecipe instanceof ShapedRecipes ? -1 : (craftingrecipe1.a() < craftingrecipe.a() ? -1 : (craftingrecipe1.a() > craftingrecipe.a() ? 1 : 0)));
+     }
+ }
+diff --git a/net/minecraft/server/RegionFile.java b/net/minecraft/server/RegionFile.java
+index 8e49cbc..2dbd8bf 100644
+--- a/net/minecraft/server/RegionFile.java
++++ b/net/minecraft/server/RegionFile.java
+@@ -245,7 +245,7 @@ public class RegionFile {
+         }
+     }
+ 
+-    private void a(int i, byte[] abyte, int j) {
++    private void a(int i, byte[] abyte, int j) throws IOException {
+         this.b(" " + i);
+         this.c.seek((long) (i * 4096));
+         this.c.writeInt(j + 1);
+@@ -265,19 +265,19 @@ public class RegionFile {
+         return this.e(i, j) != 0;
+     }
+ 
+-    private void a(int i, int j, int k) {
++    private void a(int i, int j, int k) throws IOException {
+         this.d[i + j * 32] = k;
+         this.c.seek((long) ((i + j * 32) * 4));
+         this.c.writeInt(k);
+     }
+ 
+-    private void b(int i, int j, int k) {
++    private void b(int i, int j, int k) throws IOException {
+         this.e[i + j * 32] = k;
+         this.c.seek((long) (4096 + (i + j * 32) * 4));
+         this.c.writeInt(k);
+     }
+ 
+-    public void b() {
++    public void b() throws IOException {
+         this.c.close();
+     }
+ }
+diff --git a/net/minecraft/server/Statistic.java b/net/minecraft/server/Statistic.java
+index b4f3761..771ce93 100644
+--- a/net/minecraft/server/Statistic.java
++++ b/net/minecraft/server/Statistic.java
+@@ -25,7 +25,7 @@ public class Statistic {
+     }
+ 
+     public Statistic(int i, String s) {
+-        this(i, s, i);
++        this(i, s, Statistic.i);
+     }
+ 
+     public Statistic e() {
+-- 
+2.39.1.windows.1
+
