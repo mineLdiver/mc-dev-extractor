@@ -1,0 +1,70 @@
+From d6f393625d206577a8df58796d09257943a4a38b Mon Sep 17 00:00:00 2001
+From: mineLdiver <aabesedin@mail.ru>
+Date: Sun, 8 Oct 2023 22:03:31 +0500
+Subject: [PATCH] Statistic redundant casts and synthetic methods
+
+
+diff --git a/net/minecraft/server/Achievement.java b/net/minecraft/server/Achievement.java
+index f196bf7..5e6ae05 100644
+--- a/net/minecraft/server/Achievement.java
++++ b/net/minecraft/server/Achievement.java
+@@ -57,4 +57,12 @@ public class Achievement extends Statistic {
+         AchievementList.e.add(this);
+         return this;
+     }
++
++    public /* synthetic */ Statistic d() {
++        return c();
++    }
++
++    public /* synthetic */ Statistic e() {
++        return a();
++    }
+ }
+diff --git a/net/minecraft/server/EntityHuman.java b/net/minecraft/server/EntityHuman.java
+index 5b26ce2..f700620 100644
+--- a/net/minecraft/server/EntityHuman.java
++++ b/net/minecraft/server/EntityHuman.java
+@@ -740,7 +740,7 @@ public abstract class EntityHuman extends EntityLiving {
+ 
+     public void a(EntityLiving entityliving) {
+         if (entityliving instanceof EntityMonster) {
+-            this.a((Statistic) AchievementList.s);
++            this.a(AchievementList.s);
+         }
+     }
+ 
+diff --git a/net/minecraft/server/EntityItem.java b/net/minecraft/server/EntityItem.java
+index f19f83e..b6b3a15 100644
+--- a/net/minecraft/server/EntityItem.java
++++ b/net/minecraft/server/EntityItem.java
+@@ -115,11 +115,11 @@ public class EntityItem extends Entity {
+ 
+             if (this.pickupDelay == 0 && entityhuman.inventory.pickup(this.itemStack)) {
+                 if (this.itemStack.id == Block.LOG.id) {
+-                    entityhuman.a((Statistic) AchievementList.g);
++                    entityhuman.a(AchievementList.g);
+                 }
+ 
+                 if (this.itemStack.id == Item.LEATHER.id) {
+-                    entityhuman.a((Statistic) AchievementList.t);
++                    entityhuman.a(AchievementList.t);
+                 }
+ 
+                 this.world.makeSound(this, "random.pop", 0.2F, ((this.random.nextFloat() - this.random.nextFloat()) * 0.7F + 1.0F) * 2.0F);
+diff --git a/net/minecraft/server/EntityPig.java b/net/minecraft/server/EntityPig.java
+index 66b84bd..ee63072 100644
+--- a/net/minecraft/server/EntityPig.java
++++ b/net/minecraft/server/EntityPig.java
+@@ -72,7 +72,7 @@ public class EntityPig extends EntityAnimal {
+     protected void a(float f) {
+         super.a(f);
+         if (f > 5.0F && this.passenger instanceof EntityHuman) {
+-            ((EntityHuman) this.passenger).a((Statistic) AchievementList.u);
++            ((EntityHuman) this.passenger).a(AchievementList.u);
+         }
+     }
+ }
+-- 
+2.39.1.windows.1
+
