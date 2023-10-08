@@ -8,6 +8,10 @@ import org.gradle.internal.time.Clock
 import org.gradle.internal.time.Time
 import java.io.FileOutputStream
 
+sourceSets {
+    val asm by creating
+}
+
 plugins {
     id("java")
     id("org.ajoberstar.grgit") version "1.7.2"
@@ -23,6 +27,9 @@ repositories {
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
+
+    configurations["asmImplementation"].invoke("org.ow2.asm:asm:${properties["asm_version"]}")
+    configurations["asmImplementation"].invoke("org.ow2.asm:asm-tree:${properties["asm_version"]}")
 }
 
 tasks.getByName<Test>("test") {
@@ -63,6 +70,7 @@ val mcdevSubmodule = projectDir.resolve(".git/modules/mc-dev")
 val mcdevPatches = projectDir.resolve("mc-dev-patches")
 val mcdevPatched = projectDir.resolve("mc-dev-patched")
 val mcdevClasses = project.buildDir.resolve("classes/mc-dev")
+val mcdevTransformedClasses = project.buildDir.resolve("classes/mc-dev_transformed")
 
 tasks.register<Delete>("cleanMcdev") {
     group = "mc-dev"
@@ -145,19 +153,29 @@ tasks.register<JavaCompile>("compileMcdev") {
     destinationDirectory.set(mcdevClasses)
 
     // JavaCompile doesn't support Java 5 anymore
-//    val javaVersion = JavaVersion.forClassVersion(49).toString()
-    val javaVersion = JavaVersion.VERSION_1_7.toString()
+    val javaVersion = JavaVersion.forClassVersion(49).toString()
+//    val javaVersion = JavaVersion.VERSION_1_7.toString()
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
+}
+
+tasks.register<JavaExec>("transformMcdevClasses") {
+    group = "mc-dev"
+    description = "Fixes bytecode inconsistencies with vanilla jar, such as empty classes"
+
+    dependsOn("compileMcdev")
+
+    classpath = sourceSets.getByName("asm").runtimeClasspath
+    mainClass.set("net.mine_diver.bukric.mcdev.transform.EmptyClassesTransformer")
 }
 
 tasks.register<Jar>("jarMcdev") {
     group = "mc-dev"
     description = "Bundles mc-dev into an executable jar"
 
-    dependsOn("compileMcdev")
+    dependsOn("transformMcdevClasses")
 
-    from(fileTree(mcdevPatched) { exclude("**/*.java") }, mcdevClasses)
+    from(fileTree(mcdevPatched) { exclude("**/*.java") }, mcdevClasses, mcdevTransformedClasses)
     archiveFileName.set("mc-dev.jar")
 
     manifest.from(mcdevPatched.resolve("META-INF/MANIFEST.MF"))

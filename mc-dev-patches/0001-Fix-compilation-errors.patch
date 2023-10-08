@@ -1,4 +1,4 @@
-From a25e52dbaaf64b2c8d3ebb288d647069d48f6d84 Mon Sep 17 00:00:00 2001
+From 83f4943b3d98c4367fe6b2acd58850f92a3db50f Mon Sep 17 00:00:00 2001
 From: mineLdiver <aabesedin@mail.ru>
 Date: Sun, 8 Oct 2023 01:12:21 +0500
 Subject: [PATCH] Fix compilation errors

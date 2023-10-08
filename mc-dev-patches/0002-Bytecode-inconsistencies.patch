@@ -1,0 +1,754 @@
+From f8a312dec5c70910ab97734f52851bc62af60a7e Mon Sep 17 00:00:00 2001
+From: mineLdiver <aabesedin@mail.ru>
+Date: Sun, 8 Oct 2023 07:27:13 +0500
+Subject: [PATCH] Bytecode inconsistencies
+
+
+diff --git a/net/minecraft/server/AchievementList.java b/net/minecraft/server/AchievementList.java
+index f6b4a89..7445b0d 100644
+--- a/net/minecraft/server/AchievementList.java
++++ b/net/minecraft/server/AchievementList.java
+@@ -10,7 +10,7 @@ public class AchievementList {
+     public static int c;
+     public static int d;
+     public static List e = new ArrayList();
+-    public static Achievement f = (new Achievement(0, "openInventory", 0, 0, Item.BOOK, (Achievement) null)).a().c();
++    public static Achievement f = (new Achievement(0, "openInventory", 0, 0, Item.BOOK, null)).a().c();
+     public static Achievement g = (new Achievement(1, "mineWood", 2, 1, Block.LOG, f)).c();
+     public static Achievement h = (new Achievement(2, "buildWorkBench", 4, -1, Block.WORKBENCH, g)).c();
+     public static Achievement i = (new Achievement(3, "buildPickaxe", 4, 2, Item.WOOD_PICKAXE, h)).c();
+diff --git a/net/minecraft/server/AxisAlignedBB.java b/net/minecraft/server/AxisAlignedBB.java
+index 1a95cdf..77f1132 100644
+--- a/net/minecraft/server/AxisAlignedBB.java
++++ b/net/minecraft/server/AxisAlignedBB.java
+@@ -212,7 +212,7 @@ public class AxisAlignedBB {
+         return b(d3, d4, d5, d6, d7, d8);
+     }
+ 
+-    public AxisAlignedBB clone() {
++    public AxisAlignedBB b() {
+         return b(this.a, this.b, this.c, this.d, this.e, this.f);
+     }
+ 
+diff --git a/net/minecraft/server/BlockBed.java b/net/minecraft/server/BlockBed.java
+index fae5756..e5cf792 100644
+--- a/net/minecraft/server/BlockBed.java
++++ b/net/minecraft/server/BlockBed.java
+@@ -47,7 +47,7 @@ public class BlockBed extends Block {
+                     d2 = (d2 + (double) k + 0.5D) / 2.0D;
+                 }
+ 
+-                world.createExplosion((Entity) null, (double) ((float) i + 0.5F), (double) ((float) j + 0.5F), (double) ((float) k + 0.5F), 5.0F, true);
++                world.createExplosion(null, (double) ((float) i + 0.5F), (double) ((float) j + 0.5F), (double) ((float) k + 0.5F), 5.0F, true);
+                 return true;
+             } else {
+                 if (e(l)) {
+diff --git a/net/minecraft/server/BlockCactus.java b/net/minecraft/server/BlockCactus.java
+index 1cbcb8b..6b44905 100644
+--- a/net/minecraft/server/BlockCactus.java
++++ b/net/minecraft/server/BlockCactus.java
+@@ -76,6 +76,6 @@ public class BlockCactus extends Block {
+     }
+ 
+     public void a(World world, int i, int j, int k, Entity entity) {
+-        entity.damageEntity((Entity) null, 1);
++        entity.damageEntity(null, 1);
+     }
+ }
+diff --git a/net/minecraft/server/BlockDoor.java b/net/minecraft/server/BlockDoor.java
+index 02205ff..998d686 100644
+--- a/net/minecraft/server/BlockDoor.java
++++ b/net/minecraft/server/BlockDoor.java
+@@ -124,7 +124,7 @@ public class BlockDoor extends Block {
+ 
+                 world.setData(i, j, k, l ^ 4);
+                 world.b(i, j - 1, k, i, j, k);
+-                world.a((EntityHuman) null, 1003, i, j, k, 0);
++                world.a(null, 1003, i, j, k, 0);
+             }
+         }
+     }
+diff --git a/net/minecraft/server/BlockPressurePlate.java b/net/minecraft/server/BlockPressurePlate.java
+index f8e9b21..4ea6e48 100644
+--- a/net/minecraft/server/BlockPressurePlate.java
++++ b/net/minecraft/server/BlockPressurePlate.java
+@@ -74,7 +74,7 @@ public class BlockPressurePlate extends Block {
+         List list = null;
+ 
+         if (this.a == EnumMobType.EVERYTHING) {
+-            list = world.b((Entity) null, AxisAlignedBB.b((double) ((float) i + f), (double) j, (double) ((float) k + f), (double) ((float) (i + 1) - f), (double) j + 0.25D, (double) ((float) (k + 1) - f)));
++            list = world.b(null, AxisAlignedBB.b((double) ((float) i + f), (double) j, (double) ((float) k + f), (double) ((float) (i + 1) - f), (double) j + 0.25D, (double) ((float) (k + 1) - f)));
+         }
+ 
+         if (this.a == EnumMobType.MOBS) {
+diff --git a/net/minecraft/server/BlockTrapdoor.java b/net/minecraft/server/BlockTrapdoor.java
+index 5eab479..cd2881d 100644
+--- a/net/minecraft/server/BlockTrapdoor.java
++++ b/net/minecraft/server/BlockTrapdoor.java
+@@ -77,7 +77,7 @@ public class BlockTrapdoor extends Block {
+ 
+         if (flag1 != flag) {
+             world.setData(i, j, k, l ^ 4);
+-            world.a((EntityHuman) null, 1003, i, j, k, 0);
++            world.a(null, 1003, i, j, k, 0);
+         }
+     }
+ 
+diff --git a/net/minecraft/server/ConsoleCommandHandler.java b/net/minecraft/server/ConsoleCommandHandler.java
+index da54a83..29d3f11 100644
+--- a/net/minecraft/server/ConsoleCommandHandler.java
++++ b/net/minecraft/server/ConsoleCommandHandler.java
+@@ -37,7 +37,7 @@ public class ConsoleCommandHandler {
+ 
+                     for (i = 0; i < this.server.worldServer.length; ++i) {
+                         worldserver = this.server.worldServer[i];
+-                        worldserver.save(true, (IProgressUpdate) null);
++                        worldserver.save(true, null);
+                     }
+ 
+                     this.print(s1, "Save complete.");
+diff --git a/net/minecraft/server/Container.java b/net/minecraft/server/Container.java
+index bb99614..840deb4 100644
+--- a/net/minecraft/server/Container.java
++++ b/net/minecraft/server/Container.java
+@@ -149,7 +149,7 @@ public abstract class Container {
+ 
+                             inventoryplayer.b(itemstack4);
+                             if (itemstack2.count == 0) {
+-                                slot1.c((ItemStack) null);
++                                slot1.c(null);
+                             }
+ 
+                             slot1.a(inventoryplayer.j());
+@@ -180,7 +180,7 @@ public abstract class Container {
+                                 itemstack3.count += k;
+                                 itemstack2.a(k);
+                                 if (itemstack2.count == 0) {
+-                                    slot1.c((ItemStack) null);
++                                    slot1.c(null);
+                                 }
+ 
+                                 slot1.a(inventoryplayer.j());
+diff --git a/net/minecraft/server/ContainerChest.java b/net/minecraft/server/ContainerChest.java
+index 383cd28..38c0455 100644
+--- a/net/minecraft/server/ContainerChest.java
++++ b/net/minecraft/server/ContainerChest.java
+@@ -49,7 +49,7 @@ public class ContainerChest extends Container {
+             }
+ 
+             if (itemstack1.count == 0) {
+-                slot.c((ItemStack) null);
++                slot.c(null);
+             } else {
+                 slot.c();
+             }
+diff --git a/net/minecraft/server/ContainerFurnace.java b/net/minecraft/server/ContainerFurnace.java
+index ca480db..b7bc6b8 100644
+--- a/net/minecraft/server/ContainerFurnace.java
++++ b/net/minecraft/server/ContainerFurnace.java
+@@ -80,7 +80,7 @@ public class ContainerFurnace extends Container {
+             }
+ 
+             if (itemstack1.count == 0) {
+-                slot.c((ItemStack) null);
++                slot.c(null);
+             } else {
+                 slot.c();
+             }
+diff --git a/net/minecraft/server/ContainerPlayer.java b/net/minecraft/server/ContainerPlayer.java
+index 3ba9922..e0b4538 100644
+--- a/net/minecraft/server/ContainerPlayer.java
++++ b/net/minecraft/server/ContainerPlayer.java
+@@ -55,7 +55,7 @@ public class ContainerPlayer extends Container {
+ 
+             if (itemstack != null) {
+                 entityhuman.b(itemstack);
+-                this.craftInventory.setItem(i, (ItemStack) null);
++                this.craftInventory.setItem(i, null);
+             }
+         }
+     }
+@@ -83,7 +83,7 @@ public class ContainerPlayer extends Container {
+             }
+ 
+             if (itemstack1.count == 0) {
+-                slot.c((ItemStack) null);
++                slot.c(null);
+             } else {
+                 slot.c();
+             }
+diff --git a/net/minecraft/server/ContainerWorkbench.java b/net/minecraft/server/ContainerWorkbench.java
+index a0145a5..29ac508 100644
+--- a/net/minecraft/server/ContainerWorkbench.java
++++ b/net/minecraft/server/ContainerWorkbench.java
+@@ -78,7 +78,7 @@ public class ContainerWorkbench extends Container {
+             }
+ 
+             if (itemstack1.count == 0) {
+-                slot.c((ItemStack) null);
++                slot.c(null);
+             } else {
+                 slot.c();
+             }
+diff --git a/net/minecraft/server/Entity.java b/net/minecraft/server/Entity.java
+index b28b5dd..3da9a70 100644
+--- a/net/minecraft/server/Entity.java
++++ b/net/minecraft/server/Entity.java
+@@ -207,7 +207,7 @@ public abstract class Entity {
+                 }
+             } else {
+                 if (this.fireTicks % 20 == 0) {
+-                    this.damageEntity((Entity) null, 1);
++                    this.damageEntity(null, 1);
+                 }
+ 
+                 --this.fireTicks;
+@@ -232,7 +232,7 @@ public abstract class Entity {
+ 
+     protected void ab() {
+         if (!this.fireProof) {
+-            this.damageEntity((Entity) null, 4);
++            this.damageEntity(null, 4);
+             this.fireTicks = 600;
+         }
+     }
+@@ -272,7 +272,7 @@ public abstract class Entity {
+             double d5 = d0;
+             double d6 = d1;
+             double d7 = d2;
+-            AxisAlignedBB axisalignedbb = this.boundingBox.clone();
++            AxisAlignedBB axisalignedbb = this.boundingBox.b();
+             boolean flag = this.onGround && this.isSneaking();
+ 
+             if (flag) {
+@@ -350,7 +350,7 @@ public abstract class Entity {
+                 d0 = d5;
+                 d1 = (double) this.bs;
+                 d2 = d7;
+-                AxisAlignedBB axisalignedbb1 = this.boundingBox.clone();
++                AxisAlignedBB axisalignedbb1 = this.boundingBox.b();
+ 
+                 this.boundingBox.b(axisalignedbb);
+                 list = this.world.getEntities(this, this.boundingBox.a(d5, d1, d7));
+@@ -530,7 +530,7 @@ public abstract class Entity {
+ 
+     protected void burn(int i) {
+         if (!this.fireProof) {
+-            this.damageEntity((Entity) null, i);
++            this.damageEntity(null, i);
+         }
+     }
+ 
+diff --git a/net/minecraft/server/EntityFireball.java b/net/minecraft/server/EntityFireball.java
+index 034fbcc..d05b81f 100644
+--- a/net/minecraft/server/EntityFireball.java
++++ b/net/minecraft/server/EntityFireball.java
+@@ -114,7 +114,7 @@ public class EntityFireball extends Entity {
+                     ;
+                 }
+ 
+-                this.world.createExplosion((Entity) null, this.locX, this.locY, this.locZ, 1.0F, true);
++                this.world.createExplosion(null, this.locX, this.locY, this.locZ, 1.0F, true);
+             }
+ 
+             this.die();
+diff --git a/net/minecraft/server/EntityGhast.java b/net/minecraft/server/EntityGhast.java
+index 6ab7808..c0d9138 100644
+--- a/net/minecraft/server/EntityGhast.java
++++ b/net/minecraft/server/EntityGhast.java
+@@ -122,7 +122,7 @@ public class EntityGhast extends EntityFlying implements IMonster {
+         double d4 = (this.b - this.locX) / d3;
+         double d5 = (this.c - this.locY) / d3;
+         double d6 = (this.d - this.locZ) / d3;
+-        AxisAlignedBB axisalignedbb = this.boundingBox.clone();
++        AxisAlignedBB axisalignedbb = this.boundingBox.b();
+ 
+         for (int i = 1; (double) i < d3; ++i) {
+             axisalignedbb.d(d4, d5, d6);
+diff --git a/net/minecraft/server/EntityHuman.java b/net/minecraft/server/EntityHuman.java
+index f4d773c..5b26ce2 100644
+--- a/net/minecraft/server/EntityHuman.java
++++ b/net/minecraft/server/EntityHuman.java
+@@ -446,7 +446,7 @@ public abstract class EntityHuman extends EntityLiving {
+     }
+ 
+     public void H() {
+-        this.inventory.setItem(this.inventory.itemInHandIndex, (ItemStack) null);
++        this.inventory.setItem(this.inventory.itemInHandIndex, null);
+     }
+ 
+     public double I() {
+diff --git a/net/minecraft/server/EntityItem.java b/net/minecraft/server/EntityItem.java
+index 7770e30..f19f83e 100644
+--- a/net/minecraft/server/EntityItem.java
++++ b/net/minecraft/server/EntityItem.java
+@@ -82,7 +82,7 @@ public class EntityItem extends Entity {
+     }
+ 
+     protected void burn(int i) {
+-        this.damageEntity((Entity) null, i);
++        this.damageEntity(null, i);
+     }
+ 
+     public boolean damageEntity(Entity entity, int i) {
+diff --git a/net/minecraft/server/EntityLiving.java b/net/minecraft/server/EntityLiving.java
+index 462a0fe..2922056 100644
+--- a/net/minecraft/server/EntityLiving.java
++++ b/net/minecraft/server/EntityLiving.java
+@@ -107,7 +107,7 @@ public abstract class EntityLiving extends Entity {
+         }
+ 
+         if (this.T() && this.K()) {
+-            this.damageEntity((Entity) null, 1);
++            this.damageEntity(null, 1);
+         }
+ 
+         if (this.fireProof || this.world.isStatic) {
+@@ -129,7 +129,7 @@ public abstract class EntityLiving extends Entity {
+                     this.world.a("bubble", this.locX + (double) f, this.locY + (double) f1, this.locZ + (double) f2, this.motX, this.motY, this.motZ);
+                 }
+ 
+-                this.damageEntity((Entity) null, 2);
++                this.damageEntity(null, 2);
+             }
+ 
+             this.fireTicks = 0;
+@@ -435,7 +435,7 @@ public abstract class EntityLiving extends Entity {
+         int i = (int) Math.ceil((double) (f - 3.0F));
+ 
+         if (i > 0) {
+-            this.damageEntity((Entity) null, i);
++            this.damageEntity(null, i);
+             int j = this.world.getTypeId(MathHelper.floor(this.locX), MathHelper.floor(this.locY - 0.20000000298023224D - (double) this.height), MathHelper.floor(this.locZ));
+ 
+             if (j > 0) {
+@@ -799,7 +799,7 @@ public abstract class EntityLiving extends Entity {
+     }
+ 
+     protected void Y() {
+-        this.damageEntity((Entity) null, 4);
++        this.damageEntity(null, 4);
+     }
+ 
+     public Vec3D Z() {
+diff --git a/net/minecraft/server/EntityMinecart.java b/net/minecraft/server/EntityMinecart.java
+index abdde7a..3c6780c 100644
+--- a/net/minecraft/server/EntityMinecart.java
++++ b/net/minecraft/server/EntityMinecart.java
+@@ -759,7 +759,7 @@ public class EntityMinecart extends Entity implements IInventory {
+ 
+             if (itemstack != null && itemstack.id == Item.COAL.id) {
+                 if (--itemstack.count == 0) {
+-                    entityhuman.inventory.setItem(entityhuman.inventory.itemInHandIndex, (ItemStack) null);
++                    entityhuman.inventory.setItem(entityhuman.inventory.itemInHandIndex, null);
+                 }
+ 
+                 this.e += 1200;
+diff --git a/net/minecraft/server/EntityTNTPrimed.java b/net/minecraft/server/EntityTNTPrimed.java
+index e15afd7..e9c7ff1 100644
+--- a/net/minecraft/server/EntityTNTPrimed.java
++++ b/net/minecraft/server/EntityTNTPrimed.java
+@@ -66,7 +66,7 @@ public class EntityTNTPrimed extends Entity {
+     private void explode() {
+         float f = 4.0F;
+ 
+-        this.world.a((Entity) null, this.locX, this.locY, this.locZ, f);
++        this.world.a(null, this.locX, this.locY, this.locZ, f);
+     }
+ 
+     protected void b(NBTTagCompound nbttagcompound) {
+diff --git a/net/minecraft/server/EntityTrackerEntry.java b/net/minecraft/server/EntityTrackerEntry.java
+index 3eb6669..2d32f26 100644
+--- a/net/minecraft/server/EntityTrackerEntry.java
++++ b/net/minecraft/server/EntityTrackerEntry.java
+@@ -73,7 +73,13 @@ public class EntityTrackerEntry {
+             boolean flag = Math.abs(i) >= 8 || Math.abs(j) >= 8 || Math.abs(k) >= 8;
+             boolean flag1 = Math.abs(l - this.g) >= 8 || Math.abs(i1 - this.h) >= 8;
+ 
+-            if (j1 >= -128 && j1 < 128 && k1 >= -128 && k1 < 128 && l1 >= -128 && l1 < 128 && this.t <= 400) {
++            if (j1 < -128 || j1 >= 128 || k1 < -128 || k1 >= 128 || l1 < -128 || l1 >= 128 || this.t > 400) {
++                this.t = 0;
++                this.tracker.locX = (double) i / 32.0D;
++                this.tracker.locY = (double) j / 32.0D;
++                this.tracker.locZ = (double) k / 32.0D;
++                object = new Packet34EntityTeleport(this.tracker.id, i, j, k, (byte) l, (byte) i1);
++            } else {
+                 if (flag && flag1) {
+                     object = new Packet33RelEntityMoveLook(this.tracker.id, (byte) j1, (byte) k1, (byte) l1, (byte) l, (byte) i1);
+                 } else if (flag) {
+@@ -81,12 +87,6 @@ public class EntityTrackerEntry {
+                 } else if (flag1) {
+                     object = new Packet32EntityLook(this.tracker.id, (byte) l, (byte) i1);
+                 }
+-            } else {
+-                this.t = 0;
+-                this.tracker.locX = (double) i / 32.0D;
+-                this.tracker.locY = (double) j / 32.0D;
+-                this.tracker.locZ = (double) k / 32.0D;
+-                object = new Packet34EntityTeleport(this.tracker.id, i, j, k, (byte) l, (byte) i1);
+             }
+ 
+             if (this.isMoving) {
+diff --git a/net/minecraft/server/EntityWolf.java b/net/minecraft/server/EntityWolf.java
+index eb52c93..03b1492 100644
+--- a/net/minecraft/server/EntityWolf.java
++++ b/net/minecraft/server/EntityWolf.java
+@@ -298,13 +298,13 @@ public class EntityWolf extends EntityAnimal {
+             if (itemstack != null && itemstack.id == Item.BONE.id && !this.isAngry()) {
+                 --itemstack.count;
+                 if (itemstack.count <= 0) {
+-                    entityhuman.inventory.setItem(entityhuman.inventory.itemInHandIndex, (ItemStack) null);
++                    entityhuman.inventory.setItem(entityhuman.inventory.itemInHandIndex, null);
+                 }
+ 
+                 if (!this.world.isStatic) {
+                     if (this.random.nextInt(3) == 0) {
+                         this.setTamed(true);
+-                        this.setPathEntity((PathEntity) null);
++                        this.setPathEntity(null);
+                         this.setSitting(true);
+                         this.health = 20;
+                         this.setOwnerName(entityhuman.name);
+@@ -325,7 +325,7 @@ public class EntityWolf extends EntityAnimal {
+                 if (itemfood.l() && this.datawatcher.b(18) < 20) {
+                     --itemstack.count;
+                     if (itemstack.count <= 0) {
+-                        entityhuman.inventory.setItem(entityhuman.inventory.itemInHandIndex, (ItemStack) null);
++                        entityhuman.inventory.setItem(entityhuman.inventory.itemInHandIndex, null);
+                     }
+ 
+                     this.b(((ItemFood) Item.PORK).k());
+@@ -337,7 +337,7 @@ public class EntityWolf extends EntityAnimal {
+                 if (!this.world.isStatic) {
+                     this.setSitting(!this.isSitting());
+                     this.aC = false;
+-                    this.setPathEntity((PathEntity) null);
++                    this.setPathEntity(null);
+                 }
+ 
+                 return true;
+diff --git a/net/minecraft/server/EnumArt.java b/net/minecraft/server/EnumArt.java
+index 7695136..4bd70ba 100644
+--- a/net/minecraft/server/EnumArt.java
++++ b/net/minecraft/server/EnumArt.java
+@@ -2,7 +2,7 @@ package net.minecraft.server;
+ 
+ public enum EnumArt {
+ 
+-    KEBAB("Kebab", 0, "Kebab", 16, 16, 0, 0), AZTEC("Aztec", 1, "Aztec", 16, 16, 16, 0), ALBAN("Alban", 2, "Alban", 16, 16, 32, 0), AZTEC2("Aztec2", 3, "Aztec2", 16, 16, 48, 0), BOMB("Bomb", 4, "Bomb", 16, 16, 64, 0), PLANT("Plant", 5, "Plant", 16, 16, 80, 0), WASTELAND("Wasteland", 6, "Wasteland", 16, 16, 96, 0), POOL("Pool", 7, "Pool", 32, 16, 0, 32), COURBET("Courbet", 8, "Courbet", 32, 16, 32, 32), SEA("Sea", 9, "Sea", 32, 16, 64, 32), SUNSET("Sunset", 10, "Sunset", 32, 16, 96, 32), CREEBET("Creebet", 11, "Creebet", 32, 16, 128, 32), WANDERER("Wanderer", 12, "Wanderer", 16, 32, 0, 64), GRAHAM("Graham", 13, "Graham", 16, 32, 16, 64), MATCH("Match", 14, "Match", 32, 32, 0, 128), BUST("Bust", 15, "Bust", 32, 32, 32, 128), STAGE("Stage", 16, "Stage", 32, 32, 64, 128), VOID("Void", 17, "Void", 32, 32, 96, 128), SKULL_AND_ROSES("SkullAndRoses", 18, "SkullAndRoses", 32, 32, 128, 128), FIGHTERS("Fighters", 19, "Fighters", 64, 32, 0, 96), POINTER("Pointer", 20, "Pointer", 64, 64, 0, 192), PIGSCENE("Pigscene", 21, "Pigscene", 64, 64, 64, 192), BURNINGSKULL("BurningSkull", 22, "BurningSkull", 64, 64, 128, 192), SKELETON("Skeleton", 23, "Skeleton", 64, 48, 192, 64), DONKEYKONG("DonkeyKong", 24, "DonkeyKong", 64, 48, 192, 112);
++    KEBAB("Kebab", 16, 16, 0, 0), AZTEC("Aztec", 16, 16, 16, 0), ALBAN("Alban", 16, 16, 32, 0), AZTEC2("Aztec2", 16, 16, 48, 0), BOMB("Bomb", 16, 16, 64, 0), PLANT("Plant", 16, 16, 80, 0), WASTELAND("Wasteland", 16, 16, 96, 0), POOL("Pool", 32, 16, 0, 32), COURBET("Courbet", 32, 16, 32, 32), SEA("Sea", 32, 16, 64, 32), SUNSET("Sunset", 32, 16, 96, 32), CREEBET("Creebet", 32, 16, 128, 32), WANDERER("Wanderer", 16, 32, 0, 64), GRAHAM("Graham", 16, 32, 16, 64), MATCH("Match", 32, 32, 0, 128), BUST("Bust", 32, 32, 32, 128), STAGE("Stage", 32, 32, 64, 128), VOID("Void", 32, 32, 96, 128), SKULL_AND_ROSES("SkullAndRoses", 32, 32, 128, 128), FIGHTERS("Fighters", 64, 32, 0, 96), POINTER("Pointer", 64, 64, 0, 192), PIGSCENE("Pigscene", 64, 64, 64, 192), BURNINGSKULL("BurningSkull", 64, 64, 128, 192), SKELETON("Skeleton", 64, 48, 192, 64), DONKEYKONG("DonkeyKong", 64, 48, 192, 112);
+     public static final int z = "SkullAndRoses".length();
+     public final String A;
+     public final int B;
+@@ -10,9 +10,7 @@ public enum EnumArt {
+     public final int D;
+     public final int E;
+ 
+-    private static final EnumArt[] F = new EnumArt[] { KEBAB, AZTEC, ALBAN, AZTEC2, BOMB, PLANT, WASTELAND, POOL, COURBET, SEA, SUNSET, CREEBET, WANDERER, GRAHAM, MATCH, BUST, STAGE, VOID, SKULL_AND_ROSES, FIGHTERS, POINTER, PIGSCENE, BURNINGSKULL, SKELETON, DONKEYKONG};
+-
+-    private EnumArt(String s, int i, String s1, int j, int k, int l, int i1) {
++    private EnumArt(String s1, int j, int k, int l, int i1) {
+         this.A = s1;
+         this.B = j;
+         this.C = k;
+diff --git a/net/minecraft/server/EnumBedError.java b/net/minecraft/server/EnumBedError.java
+index 337c262..aa6db42 100644
+--- a/net/minecraft/server/EnumBedError.java
++++ b/net/minecraft/server/EnumBedError.java
+@@ -2,9 +2,5 @@ package net.minecraft.server;
+ 
+ public enum EnumBedError {
+ 
+-    OK("OK", 0), NOT_POSSIBLE_HERE("NOT_POSSIBLE_HERE", 1), NOT_POSSIBLE_NOW("NOT_POSSIBLE_NOW", 2), TOO_FAR_AWAY("TOO_FAR_AWAY", 3), OTHER_PROBLEM("OTHER_PROBLEM", 4);
+-
+-    private static final EnumBedError[] f = new EnumBedError[] { OK, NOT_POSSIBLE_HERE, NOT_POSSIBLE_NOW, TOO_FAR_AWAY, OTHER_PROBLEM};
+-
+-    private EnumBedError(String s, int i) {}
++    OK, NOT_POSSIBLE_HERE, NOT_POSSIBLE_NOW, TOO_FAR_AWAY, OTHER_PROBLEM;
+ }
+diff --git a/net/minecraft/server/EnumCreatureType.java b/net/minecraft/server/EnumCreatureType.java
+index aa21ccd..38f0560 100644
+--- a/net/minecraft/server/EnumCreatureType.java
++++ b/net/minecraft/server/EnumCreatureType.java
+@@ -2,15 +2,13 @@ package net.minecraft.server;
+ 
+ public enum EnumCreatureType {
+ 
+-    MONSTER("monster", 0, IMonster.class, 70, Material.AIR, false), CREATURE("creature", 1, EntityAnimal.class, 15, Material.AIR, true), WATER_CREATURE("waterCreature", 2, EntityWaterAnimal.class, 5, Material.WATER, true);
++    MONSTER(IMonster.class, 70, Material.AIR, false), CREATURE(EntityAnimal.class, 15, Material.AIR, true), WATER_CREATURE(EntityWaterAnimal.class, 5, Material.WATER, true);
+     private final Class d;
+     private final int e;
+     private final Material f;
+     private final boolean g;
+ 
+-    private static final EnumCreatureType[] h = new EnumCreatureType[] { MONSTER, CREATURE, WATER_CREATURE};
+-
+-    private EnumCreatureType(String s, int i, Class oclass, int j, Material material, boolean flag) {
++    private EnumCreatureType(Class oclass, int j, Material material, boolean flag) {
+         this.d = oclass;
+         this.e = j;
+         this.f = material;
+diff --git a/net/minecraft/server/EnumMobType.java b/net/minecraft/server/EnumMobType.java
+index b8da2b0..d44edd6 100644
+--- a/net/minecraft/server/EnumMobType.java
++++ b/net/minecraft/server/EnumMobType.java
+@@ -2,9 +2,5 @@ package net.minecraft.server;
+ 
+ public enum EnumMobType {
+ 
+-    EVERYTHING("everything", 0), MOBS("mobs", 1), PLAYERS("players", 2);
+-
+-    private static final EnumMobType[] d = new EnumMobType[] { EVERYTHING, MOBS, PLAYERS};
+-
+-    private EnumMobType(String s, int i) {}
++    EVERYTHING, MOBS, PLAYERS;
+ }
+diff --git a/net/minecraft/server/EnumMovingObjectType.java b/net/minecraft/server/EnumMovingObjectType.java
+index b08f28b..63c5f29 100644
+--- a/net/minecraft/server/EnumMovingObjectType.java
++++ b/net/minecraft/server/EnumMovingObjectType.java
+@@ -2,9 +2,5 @@ package net.minecraft.server;
+ 
+ public enum EnumMovingObjectType {
+ 
+-    TILE("TILE", 0), ENTITY("ENTITY", 1);
+-
+-    private static final EnumMovingObjectType[] c = new EnumMovingObjectType[] { TILE, ENTITY};
+-
+-    private EnumMovingObjectType(String s, int i) {}
++    TILE, ENTITY;
+ }
+diff --git a/net/minecraft/server/EnumSkyBlock.java b/net/minecraft/server/EnumSkyBlock.java
+index d34a615..6616734 100644
+--- a/net/minecraft/server/EnumSkyBlock.java
++++ b/net/minecraft/server/EnumSkyBlock.java
+@@ -2,12 +2,10 @@ package net.minecraft.server;
+ 
+ public enum EnumSkyBlock {
+ 
+-    SKY("Sky", 0, 15), BLOCK("Block", 1, 0);
++    SKY(15), BLOCK(0);
+     public final int c;
+ 
+-    private static final EnumSkyBlock[] d = new EnumSkyBlock[] { SKY, BLOCK};
+-
+-    private EnumSkyBlock(String s, int i, int j) {
++    private EnumSkyBlock(int j) {
+         this.c = j;
+     }
+ }
+diff --git a/net/minecraft/server/EnumToolMaterial.java b/net/minecraft/server/EnumToolMaterial.java
+index 80c3e1a..feb1a5d 100644
+--- a/net/minecraft/server/EnumToolMaterial.java
++++ b/net/minecraft/server/EnumToolMaterial.java
+@@ -2,15 +2,13 @@ package net.minecraft.server;
+ 
+ public enum EnumToolMaterial {
+ 
+-    WOOD("WOOD", 0, 0, 59, 2.0F, 0), STONE("STONE", 1, 1, 131, 4.0F, 1), IRON("IRON", 2, 2, 250, 6.0F, 2), DIAMOND("EMERALD", 3, 3, 1561, 8.0F, 3), GOLD("GOLD", 4, 0, 32, 12.0F, 0);
++    WOOD(0, 59, 2.0F, 0), STONE(1, 131, 4.0F, 1), IRON(2, 250, 6.0F, 2), DIAMOND(3, 1561, 8.0F, 3), GOLD(0, 32, 12.0F, 0);
+     private final int f;
+     private final int g;
+     private final float h;
+     private final int i;
+ 
+-    private static final EnumToolMaterial[] j = new EnumToolMaterial[] { WOOD, STONE, IRON, DIAMOND, GOLD};
+-
+-    private EnumToolMaterial(String s, int i, int j, int k, float f, int l) {
++    private EnumToolMaterial(int j, int k, float f, int l) {
+         this.f = j;
+         this.g = k;
+         this.h = f;
+diff --git a/net/minecraft/server/ItemInWorldManager.java b/net/minecraft/server/ItemInWorldManager.java
+index 5e84ab1..42cbce5 100644
+--- a/net/minecraft/server/ItemInWorldManager.java
++++ b/net/minecraft/server/ItemInWorldManager.java
+@@ -41,7 +41,7 @@ public class ItemInWorldManager {
+     }
+ 
+     public void dig(int i, int j, int k, int l) {
+-        this.world.douseFire((EntityHuman) null, i, j, k, l);
++        this.world.douseFire(null, i, j, k, l);
+         this.lastDigTick = this.currentTick;
+         int i1 = this.world.getTypeId(i, j, k);
+ 
+diff --git a/net/minecraft/server/ItemRecord.java b/net/minecraft/server/ItemRecord.java
+index 8fc7615..1ae26ba 100644
+--- a/net/minecraft/server/ItemRecord.java
++++ b/net/minecraft/server/ItemRecord.java
+@@ -16,7 +16,7 @@ public class ItemRecord extends Item {
+                 return true;
+             } else {
+                 ((BlockJukeBox) Block.JUKEBOX).f(world, i, j, k, this.id);
+-                world.a((EntityHuman) null, 1005, i, j, k, this.id);
++                world.a(null, 1005, i, j, k, this.id);
+                 --itemstack.count;
+                 return true;
+             }
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+index b58ddbb..f7aac57 100644
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -186,7 +186,7 @@ public class MinecraftServer implements Runnable, ICommandListener {
+         for (int i = 0; i < this.worldServer.length; ++i) {
+             WorldServer worldserver = this.worldServer[i];
+ 
+-            worldserver.save(true, (IProgressUpdate) null);
++            worldserver.save(true, null);
+             worldserver.saveLevel();
+         }
+     }
+diff --git a/net/minecraft/server/NetServerHandler.java b/net/minecraft/server/NetServerHandler.java
+index c796af2..e7ba4b5 100644
+--- a/net/minecraft/server/NetServerHandler.java
++++ b/net/minecraft/server/NetServerHandler.java
+@@ -175,7 +175,7 @@ public class NetServerHandler extends NetHandler implements ICommandListener {
+             }
+ 
+             float f4 = 0.0625F;
+-            boolean flag = worldserver.getEntities(this.player, this.player.boundingBox.clone().shrink((double) f4, (double) f4, (double) f4)).size() == 0;
++            boolean flag = worldserver.getEntities(this.player, this.player.boundingBox.b().shrink((double) f4, (double) f4, (double) f4)).size() == 0;
+ 
+             this.player.move(d4, d6, d7);
+             d4 = d1 - this.player.locX;
+@@ -196,14 +196,14 @@ public class NetServerHandler extends NetHandler implements ICommandListener {
+             }
+ 
+             this.player.setLocation(d1, d2, d3, f2, f3);
+-            boolean flag2 = worldserver.getEntities(this.player, this.player.boundingBox.clone().shrink((double) f4, (double) f4, (double) f4)).size() == 0;
++            boolean flag2 = worldserver.getEntities(this.player, this.player.boundingBox.b().shrink((double) f4, (double) f4, (double) f4)).size() == 0;
+ 
+             if (flag && (flag1 || !flag2) && !this.player.isSleeping()) {
+                 this.a(this.x, this.y, this.z, f2, f3);
+                 return;
+             }
+ 
+-            AxisAlignedBB axisalignedbb = this.player.boundingBox.clone().b((double) f4, (double) f4, (double) f4).a(0.0D, -0.55D, 0.0D);
++            AxisAlignedBB axisalignedbb = this.player.boundingBox.b().b((double) f4, (double) f4, (double) f4).a(0.0D, -0.55D, 0.0D);
+ 
+             if (!this.minecraftServer.allowFlight && !worldserver.b(axisalignedbb)) {
+                 if (d6 >= -0.03125D) {
+@@ -429,7 +429,7 @@ public class NetServerHandler extends NetHandler implements ICommandListener {
+             a.info(s);
+             this.minecraftServer.serverConfigurationManager.sendAll(new Packet3Chat(s));
+         } else if (s.toLowerCase().startsWith("/kill")) {
+-            this.player.damageEntity((Entity) null, 1000);
++            this.player.damageEntity(null, 1000);
+         } else if (s.toLowerCase().startsWith("/tell ")) {
+             String[] astring = s.split(" ");
+ 
+diff --git a/net/minecraft/server/Packet.java b/net/minecraft/server/Packet.java
+index 0306357..3c35aa1 100644
+--- a/net/minecraft/server/Packet.java
++++ b/net/minecraft/server/Packet.java
+@@ -86,7 +86,7 @@ public abstract class Packet {
+         PacketCounter packetcounter = (PacketCounter) e.get(Integer.valueOf(i));
+ 
+         if (packetcounter == null) {
+-            packetcounter = new PacketCounter((EmptyClass1) null);
++            packetcounter = new PacketCounter(null);
+             e.put(Integer.valueOf(i), packetcounter);
+         }
+ 
+diff --git a/net/minecraft/server/ServerConfigurationManager.java b/net/minecraft/server/ServerConfigurationManager.java
+index 44c8127..40ce1d9 100644
+--- a/net/minecraft/server/ServerConfigurationManager.java
++++ b/net/minecraft/server/ServerConfigurationManager.java
+@@ -464,7 +464,7 @@ public class ServerConfigurationManager {
+     }
+ 
+     public void sendPacketNearby(double d0, double d1, double d2, double d3, int i, Packet packet) {
+-        this.sendPacketNearby((EntityHuman) null, d0, d1, d2, d3, i, packet);
++        this.sendPacketNearby(null, d0, d1, d2, d3, i, packet);
+     }
+ 
+     public void sendPacketNearby(EntityHuman entityhuman, double d0, double d1, double d2, double d3, int i, Packet packet) {
+diff --git a/net/minecraft/server/ServerGUI.java b/net/minecraft/server/ServerGUI.java
+index 1434a17..79097f2 100644
+--- a/net/minecraft/server/ServerGUI.java
++++ b/net/minecraft/server/ServerGUI.java
+@@ -31,7 +31,7 @@ public class ServerGUI extends JComponent implements ICommandListener {
+ 
+         jframe.add(servergui);
+         jframe.pack();
+-        jframe.setLocationRelativeTo((Component) null);
++        jframe.setLocationRelativeTo(null);
+         jframe.setVisible(true);
+         jframe.addWindowListener(new ServerWindowAdapter(minecraftserver));
+     }
+diff --git a/net/minecraft/server/TileEntityPiston.java b/net/minecraft/server/TileEntityPiston.java
+index 43c8794..b8b685f 100644
+--- a/net/minecraft/server/TileEntityPiston.java
++++ b/net/minecraft/server/TileEntityPiston.java
+@@ -59,7 +59,7 @@ public class TileEntityPiston extends TileEntity {
+         AxisAlignedBB axisalignedbb = Block.PISTON_MOVING.a(this.world, this.x, this.y, this.z, this.a, f, this.c);
+ 
+         if (axisalignedbb != null) {
+-            List list = this.world.b((Entity) null, axisalignedbb);
++            List list = this.world.b(null, axisalignedbb);
+ 
+             if (!list.isEmpty()) {
+                 m.addAll(list);
+diff --git a/net/minecraft/server/World.java b/net/minecraft/server/World.java
+index 97b0c17..91ba8cb 100644
+--- a/net/minecraft/server/World.java
++++ b/net/minecraft/server/World.java
+@@ -769,11 +769,11 @@ public class World implements IBlockAccess {
+ 
+     public void kill(Entity entity) {
+         if (entity.passenger != null) {
+-            entity.passenger.mount((Entity) null);
++            entity.passenger.mount(null);
+         }
+ 
+         if (entity.vehicle != null) {
+-            entity.mount((Entity) null);
++            entity.mount(null);
+         }
+ 
+         entity.die();
+@@ -1116,7 +1116,7 @@ public class World implements IBlockAccess {
+     }
+ 
+     public boolean containsEntity(AxisAlignedBB axisalignedbb) {
+-        List list = this.b((Entity) null, axisalignedbb);
++        List list = this.b(null, axisalignedbb);
+ 
+         for (int i = 0; i < list.size(); ++i) {
+             Entity entity = (Entity) list.get(i);
+@@ -1576,7 +1576,7 @@ public class World implements IBlockAccess {
+ 
+         i = this.worldData.f() + 1L;
+         if (i % (long) this.p == 0L) {
+-            this.save(false, (IProgressUpdate) null);
++            this.save(false, null);
+         }
+ 
+         this.worldData.a(i);
+@@ -2187,7 +2187,7 @@ public class World implements IBlockAccess {
+     }
+ 
+     public void e(int i, int j, int k, int l, int i1) {
+-        this.a((EntityHuman) null, i, j, k, l, i1);
++        this.a(null, i, j, k, l, i1);
+     }
+ 
+     public void a(EntityHuman entityhuman, int i, int j, int k, int l, int i1) {
+diff --git a/net/minecraft/server/WorldLoaderServer.java b/net/minecraft/server/WorldLoaderServer.java
+index 88c7cf2..49d9ce6 100644
+--- a/net/minecraft/server/WorldLoaderServer.java
++++ b/net/minecraft/server/WorldLoaderServer.java
+@@ -61,8 +61,8 @@ public class WorldLoaderServer extends WorldLoader {
+     }
+ 
+     private void a(File file1, ArrayList arraylist, ArrayList arraylist1) {
+-        ChunkFileFilter chunkfilefilter = new ChunkFileFilter((EmptyClass2) null);
+-        ChunkFilenameFilter chunkfilenamefilter = new ChunkFilenameFilter((EmptyClass2) null);
++        ChunkFileFilter chunkfilefilter = new ChunkFileFilter(null);
++        ChunkFilenameFilter chunkfilenamefilter = new ChunkFilenameFilter(null);
+         File[] afile = file1.listFiles(chunkfilefilter);
+         File[] afile1 = afile;
+         int i = afile.length;
+-- 
+2.39.1.windows.1
+
