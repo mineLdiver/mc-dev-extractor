@@ -1,3 +1,4 @@
+import net.md_5.specialsource.SpecialSource
 import org.ajoberstar.grgit.operation.CloneOp
 import org.ajoberstar.grgit.operation.CommitOp
 import org.ajoberstar.grgit.operation.OpenOp
@@ -6,10 +7,23 @@ import org.gradle.internal.logging.events.OutputEventListener
 import org.gradle.internal.logging.events.PromptOutputEvent
 import org.gradle.internal.time.Clock
 import org.gradle.internal.time.Time
+import org.objectweb.asm.ClassReader
+import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.tree.ClassNode
 import java.io.FileOutputStream
+import java.nio.file.Files
 
-sourceSets {
-    val asm by creating
+buildscript {
+    repositories {
+        maven("https://maven.fabricmc.net") { name = "FabricMC" }
+    }
+    dependencies {
+        classpath("org.ow2.asm:asm:${properties["asm_version"]}")
+        classpath("org.ow2.asm:asm-tree:${properties["asm_version"]}")
+        classpath("net.fabricmc:mapping-io:${properties["mapping-io_version"]}")
+        classpath("net.fabricmc:tiny-remapper:${properties["tiny-remapper_version"]}")
+        classpath("net.md-5:SpecialSource:${properties["specialsource_version"]}")
+    }
 }
 
 plugins {
@@ -22,14 +36,12 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    maven("https://maven.fabricmc.net") { name = "FabricMC" }
 }
 
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
-
-    configurations["asmImplementation"].invoke("org.ow2.asm:asm:${properties["asm_version"]}")
-    configurations["asmImplementation"].invoke("org.ow2.asm:asm-tree:${properties["asm_version"]}")
 }
 
 tasks.getByName<Test>("test") {
@@ -49,17 +61,17 @@ abstract class TaskWithPrompts : DefaultTask() {
 
 // General tasks
 
-val serverJar = project.buildDir.resolve("tmp/mcdevMappingsExtractor/b1.7.3.jar")
+val officialJar = project.buildDir.resolve("libs/b1.7.3.jar")
 
-task("downloadServer") {
+task("downloadOfficialJar") {
     group = "bukric"
-    description = "Downloads the server"
+    description = "Downloads the official server jar"
 
     doLast {
-        if (serverJar.exists()) return@doLast
-        serverJar.parentFile.mkdirs()
-        serverJar.createNewFile()
-        uri("https://files.betacraft.uk/server-archive/beta/b1.7.3.jar").toURL().openStream().use { it.copyTo(FileOutputStream(serverJar)) }
+        if (officialJar.exists()) return@doLast
+        officialJar.parentFile.mkdirs()
+        officialJar.createNewFile()
+        uri("https://files.betacraft.uk/server-archive/beta/b1.7.3.jar").toURL().openStream().use { it.copyTo(FileOutputStream(officialJar)) }
     }
 }
 
@@ -69,8 +81,10 @@ val mcdev = projectDir.resolve("mc-dev")
 val mcdevSubmodule = projectDir.resolve(".git/modules/mc-dev")
 val mcdevPatches = projectDir.resolve("mc-dev-patches")
 val mcdevPatched = projectDir.resolve("mc-dev-patched")
-val mcdevClasses = project.buildDir.resolve("classes/mc-dev")
-val mcdevTransformedClasses = project.buildDir.resolve("classes/mc-dev_transformed")
+val mcdevClasses = buildDir.resolve("classes/mc-dev")
+val mcdevTransformedClasses = buildDir.resolve("classes/mc-dev_transformed")
+val mcdevJar = buildDir.resolve("libs/mc-dev.jar")
+val mcdevSrg = buildDir.resolve("generated/bukric/mc-dev.srg")
 
 tasks.register<Delete>("cleanMcdev") {
     group = "mc-dev"
@@ -82,8 +96,6 @@ tasks.register<Delete>("cleanMcdev") {
 task("setupMcdev") {
     group = "mc-dev"
     description = "Sets up mc-dev"
-
-    dependsOn("cleanMcdev")
 
     doLast {
         with(CloneOp()) {
@@ -148,25 +160,36 @@ tasks.register<JavaCompile>("compileMcdev") {
     group = "mc-dev"
     description = "Compiles mc-dev"
 
+    dependsOn("setupMcdev")
+
     source = fileTree(mcdevPatched) { include("**/*.java") }
     classpath = files(mcdevClasses)
     destinationDirectory.set(mcdevClasses)
 
-    // JavaCompile doesn't support Java 5 anymore
     val javaVersion = JavaVersion.forClassVersion(49).toString()
-//    val javaVersion = JavaVersion.VERSION_1_7.toString()
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
 }
 
-tasks.register<JavaExec>("transformMcdevClasses") {
+task("transformMcdevClasses") {
     group = "mc-dev"
     description = "Fixes bytecode inconsistencies with vanilla jar, such as empty classes"
 
     dependsOn("compileMcdev")
 
-    classpath = sourceSets.getByName("asm").runtimeClasspath
-    mainClass.set("net.mine_diver.bukric.mcdev.transform.EmptyClassesTransformer")
+    doLast {
+        fileTree(mcdevClasses) { include("**/EmptyClass*.class") }.forEach {
+            val classNode = ClassNode()
+            ClassReader(Files.readAllBytes(it.toPath())).accept(classNode, 0)
+            classNode.methods.clear()
+            val writer = ClassWriter(0)
+            classNode.accept(writer)
+            val output = mcdevTransformedClasses.resolve(it.toRelativeString(mcdevClasses)).toPath()
+            Files.createDirectories(output.parent)
+            Files.createFile(output)
+            Files.write(output, writer.toByteArray())
+        }
+    }
 }
 
 tasks.register<Jar>("jarMcdev") {
@@ -181,4 +204,20 @@ tasks.register<Jar>("jarMcdev") {
     manifest.from(mcdevPatched.resolve("META-INF/MANIFEST.MF"))
 
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+task("generateMcdevMappings") {
+    group = "mc-dev"
+    description = "Compares vanilla server jar against patched mc-dev jar to generate mappings"
+
+    dependsOn("downloadOfficialJar", "jarMcdev")
+
+    doLast {
+        mcdevSrg.parentFile.mkdirs()
+        SpecialSource.main(arrayOf(
+            "--first-jar", officialJar.toRelativeString(projectDir),
+            "--second-jar", mcdevJar.toRelativeString(projectDir),
+            "--srg-out", mcdevSrg.toRelativeString(projectDir)
+        ))
+    }
 }
