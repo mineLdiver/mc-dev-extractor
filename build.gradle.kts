@@ -1,7 +1,14 @@
+import net.fabricmc.mappingio.MappingWriter
+import net.fabricmc.mappingio.format.MappingFormat
+import net.fabricmc.mappingio.format.SrgReader
+import net.fabricmc.mappingio.tree.ClassAnalysisDescCompleter
+import net.fabricmc.mappingio.tree.MemoryMappingTree
 import net.md_5.specialsource.SpecialSource
+import org.ajoberstar.grgit.operation.CheckoutOp
 import org.ajoberstar.grgit.operation.CloneOp
 import org.ajoberstar.grgit.operation.CommitOp
 import org.ajoberstar.grgit.operation.OpenOp
+import org.ajoberstar.grgit.service.ResolveService
 import org.gradle.api.internal.tasks.userinput.UserInputHandler
 import org.gradle.internal.logging.events.OutputEventListener
 import org.gradle.internal.logging.events.PromptOutputEvent
@@ -21,7 +28,6 @@ buildscript {
         classpath("org.ow2.asm:asm:${properties["asm_version"]}")
         classpath("org.ow2.asm:asm-tree:${properties["asm_version"]}")
         classpath("net.fabricmc:mapping-io:${properties["mapping-io_version"]}")
-        classpath("net.fabricmc:tiny-remapper:${properties["tiny-remapper_version"]}")
         classpath("net.md-5:SpecialSource:${properties["specialsource_version"]}")
     }
 }
@@ -59,57 +65,60 @@ abstract class TaskWithPrompts : DefaultTask() {
     }
 }
 
-// General tasks
-
-val officialJar = project.buildDir.resolve("libs/b1.7.3.jar")
+val mcdevExtractorCache = buildDir.resolve("mc-dev-extractor-cache")
+val officialJar = mcdevExtractorCache.resolve("b1.7.3.jar")
+val mcdevPatches = projectDir.resolve("mc-dev-patches")
+val mcdevPatched = projectDir.resolve("mc-dev-patched")
+val mcdevCache = mcdevExtractorCache.resolve("mc-dev")
+val mcdevClasses = mcdevCache.resolve("classes/mc-dev")
+val mcdevTransformedClasses = mcdevCache.resolve("classes/mc-dev-transformed")
+val mcdevJar = mcdevCache.resolve("libs/mc-dev.jar")
+val mcdevSrg = mcdevCache.resolve("generated/mc-dev.srg")
+val mcdevTiny = mcdevCache.resolve("generated/mc-dev.tiny")
 
 task("downloadOfficialJar") {
-    group = "bukric"
+    group = "mc-dev-extractor"
     description = "Downloads the official server jar"
 
     doLast {
         if (officialJar.exists()) return@doLast
         officialJar.parentFile.mkdirs()
         officialJar.createNewFile()
-        uri("https://files.betacraft.uk/server-archive/beta/b1.7.3.jar").toURL().openStream().use { it.copyTo(FileOutputStream(officialJar)) }
+        uri(properties["official_jar"] as String).toURL().openStream().use { it.copyTo(FileOutputStream(officialJar)) }
     }
 }
 
-// mc-dev tasks
-
-val mcdev = projectDir.resolve("mc-dev")
-val mcdevSubmodule = projectDir.resolve(".git/modules/mc-dev")
-val mcdevPatches = projectDir.resolve("mc-dev-patches")
-val mcdevPatched = projectDir.resolve("mc-dev-patched")
-val mcdevClasses = buildDir.resolve("classes/mc-dev")
-val mcdevTransformedClasses = buildDir.resolve("classes/mc-dev_transformed")
-val mcdevJar = buildDir.resolve("libs/mc-dev.jar")
-val mcdevSrg = buildDir.resolve("generated/bukric/mc-dev.srg")
-
 tasks.register<Delete>("cleanMcdev") {
-    group = "mc-dev"
+    group = "mc-dev-extractor"
     description = "Removes mc-dev-patched"
 
     delete(mcdevPatched)
 }
 
 task("setupMcdev") {
-    group = "mc-dev"
+    group = "mc-dev-extractor"
     description = "Sets up mc-dev"
 
     doLast {
         with(CloneOp()) {
-            uri = mcdevSubmodule.toURI().toString()
+            uri = properties["mc-dev"] as String
             dir = mcdevPatched
             call()
-        }
+        }.use { with(CheckoutOp(it.repository)) {
+            createBranch = true
+            with(ResolveService(it.repository)) {
+                branch = toBranchName(properties["mc-dev_patched_branch"])
+                startPoint = toRevisionString(properties["mc-dev_revision"])
+            }
+            call()
+        }}
     }
 
     finalizedBy("applyMcdevPatches")
 }
 
 task("applyMcdevPatches") {
-    group = "mc-dev"
+    group = "mc-dev-extractor"
     description = "Applies patches"
 
     doLast {
@@ -124,7 +133,7 @@ task("applyMcdevPatches") {
 }
 
 tasks.register<TaskWithPrompts>("commitMcdev") {
-    group = "mc-dev"
+    group = "mc-dev-extractor"
     description = "Commits changes to patched repo"
 
     doLast {
@@ -144,7 +153,7 @@ tasks.register<TaskWithPrompts>("commitMcdev") {
 }
 
 task("rebuildMcdevPatches") {
-    group = "mc-dev"
+    group = "mc-dev-extractor"
     description = "Rebuilds patches"
 
     doLast {
@@ -157,7 +166,7 @@ task("rebuildMcdevPatches") {
 }
 
 tasks.register<JavaCompile>("compileMcdev") {
-    group = "mc-dev"
+    group = "mc-dev-extractor"
     description = "Compiles mc-dev"
 
     dependsOn("setupMcdev")
@@ -172,7 +181,7 @@ tasks.register<JavaCompile>("compileMcdev") {
 }
 
 task("transformMcdevClasses") {
-    group = "mc-dev"
+    group = "mc-dev-extractor"
     description = "Fixes bytecode inconsistencies with vanilla jar, such as empty classes"
 
     dependsOn("compileMcdev")
@@ -193,13 +202,14 @@ task("transformMcdevClasses") {
 }
 
 tasks.register<Jar>("jarMcdev") {
-    group = "mc-dev"
+    group = "mc-dev-extractor"
     description = "Bundles mc-dev into an executable jar"
 
     dependsOn("transformMcdevClasses")
 
     from(fileTree(mcdevPatched) { exclude("**/*.java") }, mcdevClasses, mcdevTransformedClasses)
-    archiveFileName.set("mc-dev.jar")
+    destinationDirectory.set(mcdevJar.parentFile)
+    archiveFileName.set(mcdevJar.name)
 
     manifest.from(mcdevPatched.resolve("META-INF/MANIFEST.MF"))
 
@@ -207,7 +217,7 @@ tasks.register<Jar>("jarMcdev") {
 }
 
 task("generateMcdevMappings") {
-    group = "mc-dev"
+    group = "mc-dev-extractor"
     description = "Compares vanilla server jar against patched mc-dev jar to generate mappings"
 
     dependsOn("downloadOfficialJar", "jarMcdev")
@@ -219,5 +229,14 @@ task("generateMcdevMappings") {
             "--second-jar", mcdevJar.toRelativeString(projectDir),
             "--srg-out", mcdevSrg.toRelativeString(projectDir)
         ))
+        with(MemoryMappingTree()) {
+            mcdevSrg.reader().use { srgMapping ->
+                SrgReader.read(srgMapping, "server", "mc-dev", this)
+            }
+            ClassAnalysisDescCompleter.process(officialJar.toPath(), "server", this)
+            mcdevTiny.writer().use { output ->
+                accept(MappingWriter.create(output, MappingFormat.TINY_2))
+            }
+        }
     }
 }

@@ -1,4 +1,4 @@
-rootProject.name = "mcdev-mappings-extractor"
+rootProject.name = "mcdev-extractor"
 
 pluginManagement {
     repositories {
