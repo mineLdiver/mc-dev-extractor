@@ -1,4 +1,4 @@
-rootProject.name = "mcdev-extractor"
+rootProject.name = "mc-dev-extractor"
 
 pluginManagement {
     repositories {
